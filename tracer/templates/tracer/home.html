@@ -12,19 +12,33 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        Login
+                        GPS Tracer 
                     </div>
                     <div class="card-body">
+                        <!-- Kulalnıcyı login sayfasına yönlendirir -->
                         <form method="post" action="{% url 'login' %}">
                             {% csrf_token %}
                             {{ form.as_p }}
-                            <button type="submit" class="btn btn-primary btn-block">Login</button>
+                            <button type="submit" class="btn btn-primary btn-block">Giriş Yap</button>
+                        </form>
+                    </div>
+                
+                    <!-- Kullanıcı kayıt olma sayfasına yönlendirilir -->
+                    <div class="card-body">
+                        <form method="post" action="{% url 'signup' %}">
+                            {% csrf_token %}
+                            {{ signup_form.as_p }}
+                            <button type="submit" class="btn btn-primary btn-block">Kaydol</button>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
