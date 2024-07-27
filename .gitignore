@@ -31,11 +31,3 @@ Thumbs.db
 
 # Sphinx documentation
 docs/_build/
-
-# VS Code settings
-.vscode/
-
-
-tracer/__pycache__
-tracer/__init__.py
-db.sqlite3
