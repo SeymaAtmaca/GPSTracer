@@ -15,10 +15,12 @@
                         Profile
                     </div>
                     <div class="card-body">
-                        <p>Username: {{ profile.user.username }}</p>
-                        <p>First Name: {{ profile.user.first_name }}</p>
-                        <p>Last Name: {{ profile.user.last_name }}</p>
-
+                        <p>Username: {{ profile.username }}</p>
+                        <p>First Name: {{ profile.first_name }}</p>
+                        <p>Last Name: {{ profile.last_name }}</p>
+                        {% if profile.profile_picture %}
+                            <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" style="width: 150px; height: 150px;">
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -26,4 +28,4 @@
     </div>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
-</html>
+</

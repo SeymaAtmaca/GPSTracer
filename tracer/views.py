@@ -13,24 +13,32 @@ from .forms import CustomUserCreationForm
 class UserLoginView(LoginView):
     template_name = 'tracer/login.html'
 
+    def form_valid(self, form):
+        # Kullanıcı giriş yaptıktan sonra yönlendirme
+        if self.request.user.is_superuser:
+            return redirect('/admin/')
+        else:
+            return redirect('/profile/')
+
 class HomeView(LoginView):
     template_name = 'tracer/home.html'
+    context_object_name = 'home'
 
 
 @login_required
 def user_profile(request):
-    profile, created = User.objects.get_or_create(user=request.user.username)
-    return render(request, 'tracer/profile.html', {'profile': profile})
+    return render(request, 'tracer/profile.html', {'profile': request.user})
 
 
 def signup(request):
     if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST, request.FILES )
+        form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save()
             login(request, user)
             return redirect('profile')
-        else : 
-            form = CustomUserCreationForm()
-        
-        return render(request, 'tracer/signup.html', {'form': form})
+    else:
+        form = CustomUserCreationForm()
+    
+    # Formu template'e göndermek
+    return render(request, 'tracer/signup.html', {'form': form})
