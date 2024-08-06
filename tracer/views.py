@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.views.generic import ListView, UpdateView, DetailView, CreateView,DeleteView
 from django.urls import reverse_lazy
@@ -7,7 +7,7 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from .models import User
 from django.contrib.auth.forms import UserCreationForm
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, CustomUserChangeForm
 
 
 class UserLoginView(LoginView):
@@ -19,6 +19,19 @@ class UserLoginView(LoginView):
             return redirect('/admin/')
         else:
             return redirect('/profile/')
+        
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')
+    else:
+        form = CustomUserChangeForm(instance=request.user)
+
+    return render(request, 'tracer/edit_profile.html', {'form': form})
+
 
 class HomeView(LoginView):
     template_name = 'tracer/home.html'
@@ -27,7 +40,9 @@ class HomeView(LoginView):
 
 @login_required
 def user_profile(request):
-    return render(request, 'tracer/profile.html', {'profile': request.user})
+    friends = User.objects.exclude(id=request.user.id)  
+    return render(request, 'tracer/profile.html', {'profile': request.user, 'friends': friends})
+
 
 
 def signup(request):
