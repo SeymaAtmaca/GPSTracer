@@ -13,3 +13,5 @@ class CustomUserChangeForm(forms.ModelForm):
         model = User
         fields = ('username', 'email', 'first_name', 'last_name', 'profile_picture')
 
+class UserSearchForm(forms.Form):
+    query = forms.CharField(label='Search for users', max_length=100)
