@@ -1,17 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login
-from django.views.generic import ListView, UpdateView, DetailView, CreateView,DeleteView
+from django.contrib.auth import login, logout, authenticate
+from django.views.generic import ListView, UpdateView, DetailView, CreateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from .models import User
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import UserCreationForm
 from .forms import CustomUserCreationForm, CustomUserChangeForm, UserSearchForm
 from django.http import JsonResponse
 from django.db.models import Q
-
 
 User = get_user_model()
 
@@ -19,21 +17,26 @@ User = get_user_model()
 def send_friend_request(request, user_id):
     user_to_request = User.objects.get(id=user_id)
     if user_to_request:
-        # Burada arkadaşlık isteği oluşturma işlemini gerçekleştirebilirsiniz.
-        # Örneğin, bir FriendRequest modeli varsa, bu modeli kullanarak istek oluşturabilirsiniz.
+   
         pass
     return redirect('profile')
 
+
 class UserLoginView(LoginView):
     template_name = 'tracer/login.html'
-
     def form_valid(self, form):
-        # Kullanıcı giriş yaptıktan sonra yönlendirme
-        if self.request.user.is_superuser:
+        user = form.get_user() 
+        login(self.request, user) 
+
+        next_url = self.request.POST.get('next') or self.request.GET.get('next')
+        if next_url:
+            return redirect(next_url)
+        if user.is_superuser:
             return redirect('/admin/')
         else:
-            return redirect('/profile/')
-        
+            return redirect('profile')
+
+
 @login_required
 def edit_profile(request):
     if request.method == 'POST':
@@ -65,13 +68,14 @@ def user_profile(request):
                 is_superuser=False
             ).exclude(id=request.user.id)
             
-            results = []
-            for user in search_results:
-                results.append({
+            results = [
+                {
                     'id': user.id,
                     'username': user.username,
                     'profile_picture': user.profile_picture.url if user.profile_picture else 'https://via.placeholder.com/40',
-                })
+                }
+                for user in search_results
+            ]
             return JsonResponse({'results': results})
 
     friends = User.objects.exclude(id=request.user.id)
@@ -86,6 +90,12 @@ def user_profile(request):
     return render(request, 'tracer/profile.html', context)
 
 
+def logout_view(request):
+    logout(request)
+    response = redirect('login')
+    response.delete_cookie('sessionid')
+    return response
+
 
 def signup(request):
     if request.method == 'POST':
@@ -96,6 +106,5 @@ def signup(request):
             return redirect('profile')
     else:
         form = CustomUserCreationForm()
-    
-    # Formu template'e göndermek
+
     return render(request, 'tracer/signup.html', {'form': form})
