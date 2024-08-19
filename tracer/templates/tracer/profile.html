@@ -142,6 +142,11 @@
                                 <!-- Dropdown for Search Results -->
                                 <div id="searchResults" class="search-results"></div>
 
+                                <form action="{% url 'logout' %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-edit">Logout</button>
+                                </form>
+
                                 <!-- Arkadaşlar Listesi -->
                                 <div class="friends-section">
                                     <h4>Friends List:</h4>
@@ -164,7 +169,7 @@
     <script>
 $(document).ready(function () {
     let lastQuery = '';  // En son aranan sorguyu saklamak için değişken
-
+    console.log("bbb");
     $('#userSearch').on('input', function () {
         lastQuery = $(this).val();  // En son sorguyu sakla
         if (lastQuery.length > 0) {
