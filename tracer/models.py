@@ -28,7 +28,24 @@ class User(AbstractUser):
         return self.username
 
 
+class FriendRequest(models.Model):
+    sender = models.ForeignKey(User, related_name='sent_requests', on_delete=models.CASCADE)
+    receiver = models.ForeignKey(User, related_name='received_requests', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    # Diğer gerekli alanlar
 
+class Notification(models.Model):
+    recipient = models.ForeignKey(User, related_name='notifications', on_delete=models.CASCADE)
+    message = models.CharField(max_length=255)
+    link = models.URLField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    # Diğer gerekli alanlar
+
+
+    def __str__(self):
+        return f"Notification for {self.recipient.username}: {self.message}"
+    
 # Location table model
 class Location(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

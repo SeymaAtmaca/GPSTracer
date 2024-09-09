@@ -1,17 +1,76 @@
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 {% load static %}
-<nav class="navbar navbar-expand-sm bg-dark">
-    <div class="container-fluid">
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'home' %}">Home</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="">Map</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'profile' %}">Profile</a>
-            </li>
-        </ul>
-    </div>
-</nav>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Site</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{% static 'navbar.css' %}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-sm bg-dark">
+        <div class="container-fluid" style="text-decoration-color: #58a6ff;">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home' %}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="">Map</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'profile' %}">Profile</a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="notification-icon" style="margin-right:15px">
+            <i class="fa fa-bell"></i>
+            {% if notifications|length > 0 %}
+                <span class="notification-count">{{ notifications|length }}</span>
+            {% endif %}
+            <div class="notification-dropdown">
+                {% if notifications %}
+                    {% for notification in notifications %}
+                        <div class="notification-item">
+                            <p>{{ notification.message }}</p>
+                            <small>{{ notification.created_date }}</small>
+                            <a href="{{ notification.link }}">Detaylar</a>
+                        </div>
+                    {% endfor %}
+              
+                {% endif %}
+            </div>
+        </div>
+        <div>
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-edit">Logout</button>
+            </form>
+        </div>
+    </nav>
+
+    {% block content %}
+    <!-- Content goes here -->
+    {% endblock %}
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Zil simgesine tıklandığında bildirim dropdown'unu aç/kapat
+            $('.notification-icon').on('click', function() {
+                $('.notification-dropdown').toggleClass('active');
+            });
+
+            // Bildirim dropdown dışına tıklanırsa dropdown'u kapat
+            $(document).click(function(event) {
+                if (!$(event.target).closest('.notification-icon, .notification-dropdown').length) {
+                    $('.notification-dropdown').removeClass('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

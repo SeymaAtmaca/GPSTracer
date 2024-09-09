@@ -10,16 +10,33 @@ from django.contrib.auth import get_user_model
 from .forms import CustomUserCreationForm, CustomUserChangeForm, UserSearchForm
 from django.http import JsonResponse
 from django.db.models import Q
+from .models import FriendRequest, Notification
 
 User = get_user_model()
 
 @login_required
-def send_friend_request(request, user_id):
-    user_to_request = User.objects.get(id=user_id)
-    if user_to_request:
-   
-        pass
-    return redirect('profile')
+def send_friend_request(request):
+    if request.method == 'POST':
+        active_user_id = request.POST.get('active_user_id')
+        target_user_id = request.POST.get('target_user_id')
+
+        sender = User.objects.get(id=active_user_id)
+        receiver = User.objects.get(id=target_user_id)
+
+        # Friend request oluştur
+        friend_request, created = FriendRequest.objects.get_or_create(sender=sender, receiver=receiver)
+
+        # Bildirim gönder
+        Notification.objects.create(
+            recipient=receiver,
+            message=f"{sender.username} sent you a friend request.",
+            link=f"/profile/{sender.id}/"
+        )
+
+        return JsonResponse({'status': 'success'})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+
 
 
 class UserLoginView(LoginView):
@@ -77,6 +94,9 @@ def user_profile(request):
                 for user in search_results
             ]
             return JsonResponse({'results': results})
+        
+    #Bildirimler;
+    notifications = Notification.objects.filter(recipient=request.user, is_read=False)
 
     friends = User.objects.exclude(id=request.user.id)
 
@@ -85,6 +105,7 @@ def user_profile(request):
         'friends': friends,
         'search_form': search_form,
         'search_results': search_results,
+        'notifications': notifications
     }
 
     return render(request, 'tracer/profile.html', context)

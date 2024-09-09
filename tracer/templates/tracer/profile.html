@@ -143,10 +143,7 @@
                                 <!-- Dropdown for Search Results -->
                                 <div id="searchResults" class="search-results"></div>
 
-                                <form action="{% url 'logout' %}" method="post">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-edit">Logout</button>
-                                </form>
+                            
 
                                 <!-- Arkadaşlar Listesi -->
                                 <div class="friends-section">
@@ -168,61 +165,66 @@
     </div>
     {% include 'tracer/partials/_footer.html' %}
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script>
-$(document).ready(function () {
-    let lastQuery = '';  // En son aranan sorguyu saklamak için değişken
-    console.log("bbb");
-    $('#userSearch').on('input', function () {
-        lastQuery = $(this).val();  // En son sorguyu sakla
-        if (lastQuery.length > 0) {
-            fetchResults(lastQuery);  // Sonuçları getir
-        } else {
-            $('#searchResults').html('');  // Eğer sorgu boşsa sonuçları temizle
-        }
-    });
-
-    // Arama sonuçlarını getiren fonksiyon
-    function fetchResults(query) {
-        $.ajax({
-            url: "{% url 'profile' %}",  // Update this URL if needed
-            data: {
-                'query': query
-            },
-            success: function (data) {
-                $('#searchResults').html('');
-                data.results.forEach(function (user) {
-                    $('#searchResults').append(`
-                        <div class="search-result-item">
-                            <img src="${user.profile_picture}" alt="Profile Picture" width="40" height="40">
-                            <span>${user.username}</span>
-                            <form method="post" action="{% url 'send_friend_request' user.id %}" style="margin-left:auto;">
-                                {% csrf_token %}
-                                <button type="submit" class="request-button">Request</button>
-                            </form>
-                        </div>
-                    `);
-                });
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script tye="text/javascript">
+    var activeUserId = "{{ request.user.id }}";
+    $(document).ready(function(){
+        let lastQuery = '';
+        $('#userSearch').on('input', function(){
+            lastQuery = $(this).val();
+            if(lastQuery.length > 0){
+                fetchResults(lastQuery);
+            }else{
+                $('#searchResults').html();
             }
         });
-    }
 
-    // Sayfadaki herhangi bir yere tıklama olayını yakala
-    $(document).click(function (event) {
-        if (!$(event.target).closest('#userSearch, #searchResults').length) {
-            $('#searchResults').hide();  // Arama çubuğu veya sonuçlar dışında bir yere tıklanırsa sonuçları gizle
+        //Arama sonuçlarını getir
+        function fetchResults(query){
+            $.ajax({
+                url : "{% url 'profile' %}",
+                data : {
+                    'query' : query
+                },
+                success : function(data){
+                    $('#searchResults').html('');
+                    data.results.forEach(function(target){
+                        if(target.username!=='admin'){
+                            $('#searchResults').append(`
+                                <div class="search-result-item">
+                                    <img src="${target.profile_picture}" alt="Profile Picture" width="40" height="40">
+                                    <span>${target.username}</span>
+                                    <button class="request-button" data-target-id="${target.id}">Request</button>
+                                </div>
+                            `)
+                        }
+                    })
+                }
+            })
         }
-    });
 
-    // Arama çubuğuna tıklanınca en son sorguya göre sonuçları tekrar göster
-    $('#userSearch').focus(function () {
-        if (lastQuery.length > 0) {
-            $('#searchResults').show();  // Sonuçları göster
-            fetchResults(lastQuery);  // En son sorguyu kullanarak sonuçları getir
-        }
-    });
-});
+        $(document).on('click', '.request-button', function () {
+                var targetId = $(this).data('target-id');  // Tıklanan butondaki hedef kullanıcının ID'sini al
 
-    </script>
+                $.ajax({
+                    url: "{% url 'send_friend_request' %}",  // Friend request URL'si
+                    method: "POST",
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',  // CSRF koruması
+                        'active_user_id': activeUserId,  // Aktif kullanıcı ID'si
+                        'target_user_id': targetId  // Hedef kullanıcı ID'si
+                    },
+                    success: function (response) {
+                        alert("Friend request sent successfully!");
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Error sending friend request: " + error);
+                    }
+                });
+            });
+    })
+</script>
+
 </body>
 
 </html>
