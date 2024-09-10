@@ -72,6 +72,11 @@ class HomeView(LoginView):
     context_object_name = 'home'
 
 
+def show_profile(request, id):
+    user = get_object_or_404(User, id=id)  # ID'ye göre kullanıcıyı al
+    return render(request, 'tracer/profile.html', {'profile': user})
+
+
 @login_required
 def user_profile(request):
     search_form = UserSearchForm()
