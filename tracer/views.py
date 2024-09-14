@@ -115,6 +115,8 @@ def user_profile(request):
 
     return render(request, 'tracer/profile.html', context)
 
+def map(request):
+    return render(request, 'tracer/map.html')
 
 def logout_view(request):
     logout(request)
