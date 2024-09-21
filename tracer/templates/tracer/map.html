@@ -26,31 +26,44 @@
             margin-left:20px;
             padding-left:10px;
             width: 300px; 
-            height: 570px; /* Sabit bir yükseklik tanımlandı */
+            height: 570px;
             border-radius: 10px;
-            /* border-bottom: 1px solid black; */
-            overflow-y: auto; /* Kaydırma için auto kullanıldı */
-            background-color: #90aad1;
+            overflow-y: auto; 
+            background-color: #c2d5bc;
         }
         #friend-list::-webkit-scrollbar {
             margin: 10px;
         }
 
         #friend-container {
-            border-radius: 10px;
+            /* border-radius: 10px; */
             border-bottom: 1px inset #505f76;
-            width: 100%; /* %100 genişlik aldık */
+            width: 100%;
             margin-top: 20px;
-            height: 100px; /* Her bir arkadaş kartı için sabit bir yükseklik */
+            height: 80px;
             display: flex;
-            /* border-bottom: 1px solid #212730; */
         }
 
         #friend-profile {
             border-radius: 50%;
-            /* border: 2px solid #58a6ff; */
-            width: 50px;
+            border: 2px solid #788474;
+            width: 60px;
+            height: 60px;
+            margin-left:5px;
+            
+        }
+
+        #friend-messages {
+            text-align: left;
+            margin:5px;
+            width: 240px;
             height: 50px;
+            margin-left: 10px;
+            overflow-y: auto;
+        }
+
+        #friend-messages::-webkit-scrollbar{
+            margin: 5px;
         }
     </style>
 </head>
@@ -60,24 +73,31 @@
         <div id="friend-list">
             <div id="friend-container">
                 <div id="friend-profile"></div>
+                <div id="friend-messages">Lorem ipsum dolor sit amet consectetur adipisicing elit. Cupiditate labore rerum, qui possimus quas tenetur recusandae similique laudantium voluptatem asperiores.</div>
             </div>
             <div id="friend-container">
                 <div id="friend-profile"></div>
+                <div id="friend-messages">Lorem ipsum dolor sit amet consectetur adipisicing elit. Cupiditate labore rerum, qui possimus quas tenetur recusandae similique laudantium voluptatem asperiores.</div>
             </div>
             <div id="friend-container">
                 <div id="friend-profile"></div>
+                <div id="friend-messages">Lorem ipsum dolor sit amet consectetur adipisicing elit. Cupiditate labore rerum, qui possimus quas tenetur recusandae similique laudantium voluptatem asperiores.</div>
             </div>
             <div id="friend-container">
                 <div id="friend-profile"></div>
+                <div id="friend-messages">Lorem ipsum dolor sit amet consectetur adipisicing elit. Cupiditate labore rerum, qui possimus quas tenetur recusandae similique laudantium voluptatem asperiores.</div>
             </div>
             <div id="friend-container">
                 <div id="friend-profile"></div>
+                <div id="friend-messages">Lorem ipsum dolor sit amet consectetur adipisicing elit. Cupiditate labore rerum, qui possimus quas tenetur recusandae similique laudantium voluptatem asperiores.</div>
             </div>
             <div id="friend-container">
                 <div id="friend-profile"></div>
+                <div id="friend-messages">Lorem ipsum dolor sit amet consectetur adipisicing elit. Cupiditate labore rerum, qui possimus quas tenetur recusandae similique laudantium voluptatem asperiores.</div>
             </div>
             <div id="friend-container">
                 <div id="friend-profile"></div>
+                <div id="friend-messages">Lorem ipsum dolor sit amet consectetur adipisicing elit. Cupiditate labore rerum, qui possimus quas tenetur recusandae similique laudantium voluptatem asperiores.</div>
             </div>
         </div>
         <div id="map"></div>
