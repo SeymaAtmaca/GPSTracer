@@ -22,19 +22,15 @@
             margin-right: 20px;
         }
         #friend-list {
-            margin-top:20px;
-            margin-left:20px;
-            padding-left:10px;
+            margin-top: 20px;
+            margin-left: 20px;
+            padding-left: 10px;
             width: 300px; 
             height: 570px;
             border-radius: 10px;
             overflow-y: auto; 
             background-color: #c2d5bc;
         }
-        #friend-list::-webkit-scrollbar {
-            margin: 10px;
-        }
-
         #friend-container {
             border-bottom: 1px inset #505f76;
             width: 100%;
@@ -42,26 +38,20 @@
             height: 80px;
             display: flex;
         }
-
         #friend-profile {
             border-radius: 50%;
             border: 2px solid #788474;
             width: 60px;
             height: 60px;
-            margin-left:5px;
+            margin-left: 5px;
         }
-
         #friend-messages {
             text-align: left;
-            margin:5px;
+            margin: 5px;
             width: 240px;
             height: 50px;
             margin-left: 10px;
             overflow-y: auto;
-        }
-
-        #friend-messages::-webkit-scrollbar{
-            margin: 5px;
         }
     </style>
 </head>
@@ -70,23 +60,21 @@
     <div id="container">
         <div id="friend-list">
             <div id="friend-container">
-                <div id="friend-profile"></div>
+                <img id="friend-profile" src="{{ profileImage }}" alt="Profile Image">
                 <div id="friend-messages">Lorem ipsum dolor sit amet consectetur adipisicing elit. Cupiditate labore rerum, qui possimus quas tenetur recusandae similique laudantium voluptatem asperiores.</div>
             </div>
-            <!-- Arkadaş listesi devamı -->
         </div>
         <div id="map"></div>
     </div>
     
     <script src="{% static 'leaflet/leaflet.js' %}"></script>
     <script>
-        let lat = 51.505;
-        let lon = -0.09;
-        const userName = "{{ user.username }}"
-        
+        const username = "{{ user.username }}";
+        const profileImage = "{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'default.jpg' %}{% endif %}";
+
         // Harita tanımlaması
-        const map = L.map('map').setView([lat, lon], 13);
-        
+        const map = L.map('map').setView([51.505, -0.09], 13);
+
         // Harita için tile layer tanımlaması
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -105,15 +93,16 @@
 
         // Lokasyon başarıyla alındığında
         function showPosition(position) {
-            lat = position.coords.latitude;
-            lon = position.coords.longitude;
-            console.log(`Enlem: ${lat}, Boylam: ${lon}`);
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
             
             // Haritanın merkezi yeni lokasyona göre güncellenir
             map.setView([lat, lon], 16);
             
-            // Marker eklenir
-            L.marker([lat, lon]).addTo(map).bindPopup(`${userName}`).openPopup();
+            // Marker eklenir ve profil fotoğrafı ile kullanıcı adı popup'a eklenir
+            L.marker([lat, lon]).addTo(map)
+                .bindPopup(`<img src="${profileImage}" alt="Profile Image" width="35" height="35" style="border-radius: 50%;margin-right:5px"><b>  ${username}</b>`)
+                .openPopup();
         }
 
         // Hata olduğunda
