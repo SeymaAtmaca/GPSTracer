@@ -9,7 +9,8 @@ class User(AbstractUser):
     first_name = models.CharField(max_length=250)
     last_name = models.CharField(max_length=250)
     profile_picture = models.ImageField(upload_to='profile_pics', blank=True, null=True)
-    
+    isActive = models.BooleanField(default=True)
+
     groups = models.ManyToManyField(
         'auth.Group',
         related_name='tracer_users',
@@ -36,6 +37,7 @@ class FriendRequest(models.Model):
     # Diğer gerekli alanlar
 
 class Notification(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=True)
     recipient = models.ForeignKey(User, related_name='notifications', on_delete=models.CASCADE)
     message = models.CharField(max_length=255)
     link = models.URLField()
