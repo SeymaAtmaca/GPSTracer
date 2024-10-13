@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+    <style>
+        .request-buttons button {
+            display: inline;
+            width: 30%;
+            margin-bottom: 10px;
+            background-color: #58a6ff !important;
+            color: #0d1117 !important;
+            border: none !important;
+            padding: 10px !important;
+            border-radius: 5px !important;
+            font-size:7pt;
+            margin-top:20px;
+            
+        }
+
+        .request-buttons button:hover {
+            background-color: #4f8dff !important;
+            
+        }
+    </style>
+</head>
+
+<body>
+    {% include 'tracer/partials/_navbar.html' %}
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Profile</h2>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Profil Bilgileri -->
+                            <div class="col-md-4 profile-section">
+                                <div class="text-center">
+                                    {% if profile.profile_picture %}
+                                    <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="profile-picture" style="width: 150px; height: 150px;">
+                                    {% else %}
+                                    <img src="https://via.placeholder.com/150" alt="Default Profile Picture" class="profile-picture" style="width: 150px; height: 150px;">
+                                    {% endif %}
+                                    <h3>{{ profile.username }}</h3>
+
+                                   
+                                </div>
+                                <div class="request-buttons container">
+                                    <button class="request-buttons">Accept Request</button>
+                                    <button class="request-buttons">Discard Request</button>
+                                    <button class="request-buttons">Send a Message</button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-8">
+                                {% if profile.show_locations == True %}
+                                    <div class="friends-section">
+                                        <h4>Friends List:</h4>
+                                        <ul class="list-group">
+                                            {% for friend in profile.friends.all %}
+                                                <li class="list-group-item">{{ friend.username }}</li>
+                                            {% empty %}
+                                                <li class="list-group-item">No friends yet.</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% else %}
+                                    <p>This profile in hidden mode.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'tracer/partials/_footer.html' %}
+
+</body>
+
+</html>

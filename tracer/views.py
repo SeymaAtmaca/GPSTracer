@@ -59,6 +59,8 @@ def edit_profile(request):
     if request.method == 'POST':
         form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
+            user = form.save(commit=False)
+            user.show_locations = 'show_profile' in request.POST
             form.save()
             return redirect('profile')
     else:
