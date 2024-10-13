@@ -30,7 +30,7 @@ def send_friend_request(request):
         Notification.objects.create(
             recipient=receiver,
             message=f"{sender.username} sent you a friend request.",
-            link=f"/profile/{sender.id}/"
+            link=f"/user/{sender.id}/"
         )
 
         return JsonResponse({'status': 'success'})
@@ -75,6 +75,10 @@ class HomeView(LoginView):
 def show_profile(request, id):
     user = get_object_or_404(User, id=id)  # ID'ye göre kullanıcıyı al
     return render(request, 'tracer/profile.html', {'profile': user})
+
+def visit_profile(request, id):
+    user = get_object_or_404(User, id='a5416044-e098-43ec-8288-a9be204bc1dc')  # ID'ye göre kullanıcıyı al
+    return render(request, 'tracer/user.html', {'profile': user})
 
 
 @login_required

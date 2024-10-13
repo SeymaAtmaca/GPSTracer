@@ -4,6 +4,7 @@ body {
 }
 
 .card {
+    width : 70%;
     background-color: #161b22 !important;
     border-color: #30363d !important;
 }
@@ -42,7 +43,7 @@ body {
 }
 
 .container {
-    margin-top: 50px !important;
+    margin-top: 70px !important;
 }
 
 .card-body {

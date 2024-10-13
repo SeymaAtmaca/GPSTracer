@@ -9,6 +9,8 @@ class User(AbstractUser):
     first_name = models.CharField(max_length=250)
     last_name = models.CharField(max_length=250)
     profile_picture = models.ImageField(upload_to='profile_pics', blank=True, null=True)
+    show_friend_list = models.BooleanField(default=False);
+    show_locations = models.BooleanField(default=False);
     isActive = models.BooleanField(default=True)
 
     groups = models.ManyToManyField(
