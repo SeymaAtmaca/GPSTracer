@@ -36,7 +36,6 @@ class FriendRequest(models.Model):
     sender = models.ForeignKey(User, related_name='sent_requests', on_delete=models.CASCADE)
     receiver = models.ForeignKey(User, related_name='received_requests', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-    # Diğer gerekli alanlar
 
 class Notification(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=True)
@@ -45,7 +44,6 @@ class Notification(models.Model):
     link = models.URLField()
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    # Diğer gerekli alanlar
 
 
     def __str__(self):

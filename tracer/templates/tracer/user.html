@@ -55,9 +55,9 @@
                                    
                                 </div>
                                 <div class="request-buttons container">
-                                    <button class="request-buttons">Accept Request</button>
-                                    <button class="request-buttons">Discard Request</button>
-                                    <button class="request-buttons">Send a Message</button>
+                                    <button class="request-buttons accept" data-profile-id="{{profile.id}}">Accept Request</button>
+                                    <button class="request-buttons discard" data-profile-id="{{profile.id}}">Discard Request</button>
+                                    <button class="request-buttons message" data-profile-id="{{profile.id}}">Send a Message</button>
                                 </div>
                             </div>
                             
@@ -84,7 +84,29 @@
         </div>
     </div>
     {% include 'tracer/partials/_footer.html' %}
-
+    <script>
+        var activeUserId = "{{ request.user.id }}";
+        $(document).ready(function(){
+            $(document).on('click', '.accept', function(){
+                var targetId = $(this).data('profile-id');
+                $.ajax({
+                    url : "{% url 'add_friend' %}",
+                    method : "POST",
+                    data : {
+                        'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                        'active_user_id': activeUserId,
+                        'target_user_id' : targetId
+                    },
+                    success: function(response) {
+                        alert("Users friend request accepted.")
+                    },
+                    error: function(xhr, status, error){
+                        alert("User can't added to frind list." + error  + status)
+                    }
+                })
+            })
+        })
+    </script>
 </body>
 
 </html>

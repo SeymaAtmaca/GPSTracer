@@ -68,6 +68,19 @@ def edit_profile(request):
 
     return render(request, 'tracer/edit_profile.html', {'form': form})
 
+@login_required
+def add_friend(request):
+    if request.method == 'POST':
+        active_user_id = request.POST.get('active_user_id');
+        target_user_id = request.POST.get('target_user_id')
+
+        sender = User.objects.get(id=active_user_id)
+        target = User.objects.get(id = target_user_id)
+
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'errorr'})
+
+        
 
 class HomeView(LoginView):
     template_name = 'tracer/home.html'
