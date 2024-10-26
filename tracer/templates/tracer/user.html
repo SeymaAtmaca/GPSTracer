@@ -54,7 +54,7 @@
 
                                    
                                 </div>
-                                <div class="request-buttons container">
+                                <div class="request-buttons container">  
                                     <button class="request-buttons accept" data-profile-id="{{profile.id}}">Accept Request</button>
                                     <button class="request-buttons discard" data-profile-id="{{profile.id}}">Discard Request</button>
                                     <button class="request-buttons message" data-profile-id="{{profile.id}}">Send a Message</button>
@@ -62,20 +62,23 @@
                             </div>
                             
                             <div class="col-md-8">
-                                {% if profile.show_locations == True %}
-                                    <div class="friends-section">
-                                        <h4>Friends List:</h4>
-                                        <ul class="list-group">
-                                            {% for friend in profile.friends.all %}
-                                                <li class="list-group-item">{{ friend.username }}</li>
-                                            {% empty %}
-                                                <li class="list-group-item">No friends yet.</li>
+                                {% if profile.show_locations %}
+                                <div class="friends-section">
+                                    <h4>Friends List:</h4>
+                                    <ul class="list-group">
+                                        {% if profile.person_friends.all %}
+                                            {% for friend_relation in profile.person_friends.all %}
+                                                <li class="list-group-item">{{ friend_relation.friendId.username }}</li>
                                             {% endfor %}
-                                        </ul>
-                                    </div>
-                                {% else %}
-                                    <p>This profile in hidden mode.</p>
-                                {% endif %}
+                                        {% else %}
+                                            <li class="list-group-item">No friends yet.</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            {% else %}
+                                <p>Locations are hidden.</p>
+                            {% endif %}
+                            
                             </div>
                         </div>
                     </div>
@@ -98,8 +101,12 @@
                         'target_user_id' : targetId
                     },
                     success: function(response) {
-                        alert("Users friend request accepted.")
+                        if(response.status === 'success') {
+                            alert("Users friend request accepted..");
+                            location.reload();  
+                        }
                     },
+
                     error: function(xhr, status, error){
                         alert("User can't added to frind list." + error  + status)
                     }

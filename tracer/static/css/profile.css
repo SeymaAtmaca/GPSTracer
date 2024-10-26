@@ -103,3 +103,15 @@ body {
 
 
 
+.friend-link {
+    text-decoration: none !important;  
+    color: inherit !important;       
+}
+
+.friend-link:hover {
+    text-decoration: underline !important;  
+}
+
+.friend-link:hover .friend-username {
+    text-decoration: none !important;  
+}

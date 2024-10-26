@@ -5,12 +5,13 @@ from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
-from .models import User
+from .models import User, Friendship
 from django.contrib.auth import get_user_model
 from .forms import CustomUserCreationForm, CustomUserChangeForm, UserSearchForm
 from django.http import JsonResponse
 from django.db.models import Q
 from .models import FriendRequest, Notification
+from datetime import datetime
 
 User = get_user_model()
 
@@ -36,6 +37,17 @@ def send_friend_request(request):
         return JsonResponse({'status': 'success'})
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+
+def get_user_friends(user):
+    friendships = Friendship.objects.filter(
+        Q(sender=user, status='accepted') | Q(receiver=user, status='accepted')
+    )
+    friends = []
+    for friendship in friendships:
+        # Arkadaşlık ilişkisini oluşturan diğer kullanıcıyı bul
+        friend = friendship.receiver if friendship.sender == user else friendship.sender
+        friends.append(friend)
+    return friends
 
 
 
@@ -71,15 +83,25 @@ def edit_profile(request):
 @login_required
 def add_friend(request):
     if request.method == 'POST':
-        active_user_id = request.POST.get('active_user_id');
+        active_user_id = request.POST.get('active_user_id')
         target_user_id = request.POST.get('target_user_id')
 
-        sender = User.objects.get(id=active_user_id)
-        target = User.objects.get(id = target_user_id)
+        if not active_user_id or not target_user_id:
+            return JsonResponse({'status': 'error', 'message': 'Invalid user IDs'})
 
-        return JsonResponse({'status': 'success'})
-    return JsonResponse({'status': 'errorr'})
+        sender = get_object_or_404(User, id=active_user_id)
+        target = get_object_or_404(User, id=target_user_id)
 
+        
+        Friendship.objects.create(sender=sender, receiver=target, status="accepted")
+        # if sender == target:
+        #     return JsonResponse({'status': 'error', 'message': 'You cannot add yourself as a friend'})
+
+        # sender.friends.add(target)
+        # target.friends.add(sender) 
+        return JsonResponse({'status': 'success', 'message': 'Friend added successfully'})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
         
 
 class HomeView(LoginView):
@@ -89,7 +111,8 @@ class HomeView(LoginView):
 
 def show_profile(request, id):
     user = get_object_or_404(User, id=id)  # ID'ye göre kullanıcıyı al
-    return render(request, 'tracer/profile.html', {'profile': user})
+    user_friends = get_user_friends(user)
+    return render(request, 'tracer/profile.html', {'profile': user, 'user_friends': user_friends})
 
 def visit_profile(request, id):
     user = get_object_or_404(User, id='a5416044-e098-43ec-8288-a9be204bc1dc')  # ID'ye göre kullanıcıyı al
@@ -99,40 +122,35 @@ def visit_profile(request, id):
 @login_required
 def user_profile(request):
     search_form = UserSearchForm()
-    search_results = []
-
     if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         query = request.GET.get('query', '')
-        if query:
-            search_results = User.objects.filter(
-                Q(username__icontains=query) | Q(email__icontains=query),
-                is_superuser=False
-            ).exclude(id=request.user.id)
-            
-            results = [
-                {
-                    'id': user.id,
-                    'username': user.username,
-                    'profile_picture': user.profile_picture.url if user.profile_picture else 'https://via.placeholder.com/40',
-                }
-                for user in search_results
-            ]
-            return JsonResponse({'results': results})
-        
-    #Bildirimler;
-    notifications = Notification.objects.filter(recipient=request.user, is_read=False)
+        search_results = User.objects.filter(
+            Q(username__icontains=query) | Q(email__icontains=query),
+            is_superuser=False
+        ).exclude(id=request.user.id)
 
-    friends = User.objects.exclude(id=request.user.id)
+        results = [
+            {
+                'id': user.id,
+                'username': user.username,
+                'profile_picture': user.profile_picture.url if user.profile_picture else 'https://via.placeholder.com/40',
+            }
+            for user in search_results
+        ]
+        return JsonResponse({'results': results})
+
+    notifications = Notification.objects.filter(recipient=request.user, is_read=False)
+    friends = get_user_friends(request.user.id)
 
     context = {
         'profile': request.user,
         'friends': friends,
         'search_form': search_form,
-        'search_results': search_results,
-        'notifications': notifications
+        'notifications': notifications,
+        
     }
-
     return render(request, 'tracer/profile.html', context)
+
 
 def map(request):
     return render(request, 'tracer/map.html')

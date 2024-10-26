@@ -2,54 +2,56 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-# User table model
+# User model
 class User(AbstractUser):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=250)
     last_name = models.CharField(max_length=250)
     profile_picture = models.ImageField(upload_to='profile_pics', blank=True, null=True)
-    show_friend_list = models.BooleanField(default=False);
-    show_locations = models.BooleanField(default=False);
+    show_friend_list = models.BooleanField(default=False)
+    show_locations = models.BooleanField(default=False)
     isActive = models.BooleanField(default=True)
-
-    groups = models.ManyToManyField(
-        'auth.Group',
-        related_name='tracer_users',
-        blank=True,
-        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
-        verbose_name='groups',
-    )
-    user_permissions = models.ManyToManyField(
-        'auth.Permission',
-        related_name='tracer_users',
-        blank=True,
-        help_text='Specific permissions for this user.',
-        verbose_name='user permissions',
-    )
 
     def __str__(self):
         return self.username
 
 
-class FriendRequest(models.Model):
-    sender = models.ForeignKey(User, related_name='sent_requests', on_delete=models.CASCADE)
-    receiver = models.ForeignKey(User, related_name='received_requests', on_delete=models.CASCADE)
+class Friendship(models.Model):
+    sender = models.ForeignKey(User, related_name='sent_friendships', on_delete=models.CASCADE)
+    receiver = models.ForeignKey(User, related_name='received_friendships', on_delete=models.CASCADE)
+    status = models.CharField(max_length=10, choices=[('sent', 'Sent'), ('accepted', 'Accepted')], default='sent')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = ('sender', 'receiver')  # Prevents duplicate friend requests between the same users
+
+    def __str__(self):
+        return f"{self.sender} -> {self.receiver} | Status: {self.status}"
+
+
+class FriendRequest(models.Model):
+    sender = models.ForeignKey(User, related_name='friend_requests_sent', on_delete=models.CASCADE)
+    receiver = models.ForeignKey(User, related_name='friend_requests_received', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Friend request from {self.sender} to {self.receiver}"
+
+
 class Notification(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     recipient = models.ForeignKey(User, related_name='notifications', on_delete=models.CASCADE)
     message = models.CharField(max_length=255)
     link = models.URLField()
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
-
     def __str__(self):
         return f"Notification for {self.recipient.username}: {self.message}"
-    
-# Location table model
+
+
+# Location model
 class Location(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     latitude = models.FloatField()

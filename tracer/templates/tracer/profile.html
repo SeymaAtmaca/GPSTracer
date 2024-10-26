@@ -46,8 +46,14 @@
                                 <div class="friends-section">
                                     <h4>Friends List:</h4>
                                     <ul class="list-group">
-                                        {% for friend in profile.friends.all %}
-                                        <li class="list-group-item">{{ friend.username }}</li>
+                                        {% for friend in friends %}
+                                        <li class="list-group-item">
+                                            <a href="{% url 'visit_profile' friend.id %}" class=""friend-link>
+                                                <img src="{{ friend.profile_picture.url }}" alt="Profile Picture" class="profile-picture" style="width: 50px; height: 50px;">
+                                                <span class="friend-username">{{ friend.username }}</span>
+                                            </a>
+                                            
+                                        </li>
                                         {% empty %}
                                         <li class="list-group-item">No friends yet.</li>
                                         {% endfor %}
