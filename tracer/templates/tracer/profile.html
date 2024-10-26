@@ -48,17 +48,19 @@
                                     <ul class="list-group">
                                         {% for friend in friends %}
                                         <li class="list-group-item">
-                                            <a href="{% url 'visit_profile' friend.id %}" class=""friend-link>
-                                                <img src="{{ friend.profile_picture.url }}" alt="Profile Picture" class="profile-picture" style="width: 50px; height: 50px;">
+                                            <a href="{% url 'visit_profile' friend.id %}" class="friend-link">
+                                                <img src="{{ friend.profile_picture.url }}" alt="Profile Picture" class="friend-picture" style="border-radius: 50%; width: 50px; height: 50px;">
                                                 <span class="friend-username">{{ friend.username }}</span>
                                             </a>
-                                            
                                         </li>
+                                        
                                         {% empty %}
                                         <li class="list-group-item">No friends yet.</li>
                                         {% endfor %}
                                     </ul>
                                 </div>
+                                
+                                
                             </div>
                         </div>
                     </div>
@@ -69,82 +71,95 @@
     {% include 'tracer/partials/_footer.html' %}
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<script tye="text/javascript">
-    var activeUserId = "{{ request.user.id }}";
-    $(document).ready(function () {
-        let lastQuery = '';
-
-        // Arama çubuğuna tıklandığında sonuçları tekrar göster
-        $('#userSearch').on('focus', function () {
-            if (lastQuery.length > 0) {
-                $('#searchResults').show();
-            }
-        });
-
-        // Arama çubuğuna yazıldığında sonuçları getir
-        $('#userSearch').on('input', function () {
-            lastQuery = $(this).val();
-            if (lastQuery.length > 0) {
-                fetchResults(lastQuery);
-                $('#searchResults').show();
-            } else {
-                $('#searchResults').html('');
-                $('#searchResults').hide();
-            }
-        });
-
-        // Arama sonuçlarını getir
-        function fetchResults(query) {
-            $.ajax({
-                url: "{% url 'profile' %}",
-                data: {
-                    'query': query
-                },
-                success: function (data) {
+    <script type="text/javascript">
+        var activeUserId = "{{ request.user.id }}";
+        var friends = "{{ friends }}"
+        
+        $(document).ready(function () {
+            let lastQuery = '';
+    
+            // Arama çubuğuna tıklandığında sonuçları tekrar göster
+            $('#userSearch').on('focus', function () {
+                if (lastQuery.length > 0) {
+                    $('#searchResults').show();
+                }
+            });
+    
+            // Arama çubuğuna yazıldığında sonuçları getir
+            $('#userSearch').on('input', function () {
+                lastQuery = $(this).val();
+                if (lastQuery.length > 0) {
+                    fetchResults(lastQuery);
+                    $('#searchResults').show();
+                } else {
                     $('#searchResults').html('');
-                    data.results.forEach(function (target) {
-                        if (target.username !== 'admin') {
-                            $('#searchResults').append(`
-                                <div class="search-result-item">
-                                    <img src="${target.profile_picture}" alt="Profile Picture" width="40" height="40">
-                                    <span>${target.username}</span>
-                                    <button class="request-button" data-target-id="${target.id}">Request</button>
-                                </div>
-                            `);
-                        }
-                    });
+                    $('#searchResults').hide();
                 }
             });
-        }
-
-        // Arama çubuğunun dışında bir yere tıklanırsa listeyi gizle
-        $(document).on('click', function (e) {
-            if (!$(e.target).closest('#userSearch').length && !$(e.target).closest('#searchResults').length) {
-                $('#searchResults').hide();
+    
+            // Arama sonuçlarını getir
+            function fetchResults(query) {
+                $.ajax({
+                    url: "{% url 'profile' %}",  // AJAX çağrısı için doğru URL
+                    data: {
+                        'query': query
+                    },
+                    success: function (data) {
+                        $('#searchResults').html('');
+                        data.results.forEach(function (target) {
+                            if (target.username !== 'admin') {
+                                $('#searchResults').append(`
+                                    <div class="search-result-item">
+                                        <img src="${target.profile_picture}" alt="Profile Picture" width="40" height="40">
+                                        <span style="margin-right:5px">${target.username}</span>
+                                        ${friends.includes(target.username) ? `
+                                            <button style="margin-left: auto;" class="view-button" data-target-id="${target.id}">View Profile</button>
+                                        ` : `
+                                            <button style="margin-left: auto;" class="request-button" data-target-id="${target.id}">Request</button>
+                                        `}
+                                    </div>
+                                `);
+                            }
+                        });
+                    }
+                });
             }
-        });
-
-        // Arkadaşlık isteği gönderme
-        $(document).on('click', '.request-button', function () {
-            var targetId = $(this).data('target-id');
-            $.ajax({
-                url: "{% url 'send_friend_request' %}",
-                method: "POST",
-                data: {
-                    'csrfmiddlewaretoken': '{{ csrf_token }}',
-                    'active_user_id': activeUserId,
-                    'target_user_id': targetId
-                },
-                success: function (response) {
-                    alert("Friend request sent successfully!");
-                },
-                error: function (xhr, status, error) {
-                    alert("Error sending friend request: " + error);
+    
+            // Arkadaşlık isteği gönderme
+            $(document).on('click', '.request-button', function () {
+                var targetId = $(this).data('target-id');
+                $.ajax({
+                    url: "{% url 'send_friend_request' %}",
+                    method: "POST",
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'active_user_id': activeUserId,
+                        'target_user_id': targetId
+                    },
+                    success: function (response) {
+                        alert("Friend request sent successfully!");
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Error sending friend request: " + error);
+                    }
+                });
+            });
+    
+            // Profil görüntüleme
+            $(document).on('click', '.view-profile-button', function () {
+                var targetId = $(this).data('target-id');
+                window.location.href = `/user/${targetId}/`;  // Profil sayfasına yönlendirme
+            });
+    
+            // Arama çubuğunun dışında bir yere tıklanırsa listeyi gizle
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('#userSearch').length && !$(e.target).closest('#searchResults').length) {
+                    $('#searchResults').hide();
                 }
             });
         });
-    });
-</script>
+    </script>
+    
 
 </body>
 
