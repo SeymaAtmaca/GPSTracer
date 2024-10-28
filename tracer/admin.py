@@ -21,3 +21,7 @@ class NotificationAdmin(admin.ModelAdmin):
 @admin.register(Friendship)
 class FriendsAdmin(admin.ModelAdmin):
     list_display = ('id', 'sender', 'receiver')
+
+@admin.register(Location)
+class LocationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'latitude', 'longitude', 'timestamp',)

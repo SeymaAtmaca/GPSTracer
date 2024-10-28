@@ -6,63 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leaflet Map</title>
     <link rel="stylesheet" href="{% static 'leaflet/leaflet.css' %}"/>
-    <style>
-        #container {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            height: 100%;
-        }
-        #map { 
-            height: 570px;
-            width: 75%;  
-            border: 1px solid black;
-            border-radius: 10px;
-            margin-top: 20px;
-            margin-right: 20px;
-        }
-        #friend-list {
-            margin-top: 20px;
-            margin-left: 20px;
-            padding-left: 10px;
-            width: 300px; 
-            height: 570px;
-            border-radius: 10px;
-            overflow-y: auto; 
-            background-color: #c2d5bc;
-        }
-        #friend-container {
-            border-bottom: 1px inset #505f76;
-            width: 100%;
-            margin-top: 20px;
-            height: 80px;
-            display: flex;
-        }
-        #friend-profile {
-            border-radius: 50%;
-            border: 2px solid #788474;
-            width: 60px;
-            height: 60px;
-            margin-left: 5px;
-        }
-        #friend-messages {
-            text-align: left;
-            margin: 5px;
-            width: 240px;
-            height: 50px;
-            margin-left: 10px;
-            overflow-y: auto;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/map.css' %}">
 </head>
 <body style="background-color:#212730">
     {% include 'tracer/partials/_navbar.html' %}
     <div id="container">
         <div id="friend-list">
-            <div id="friend-container">
-                <img id="friend-profile" src="{{ profileImage }}" alt="Profile Image">
-                <div id="friend-messages">Lorem ipsum dolor sit amet consectetur adipisicing elit. Cupiditate labore rerum, qui possimus quas tenetur recusandae similique laudantium voluptatem asperiores.</div>
+            {% for friend in friends %}
+            <div class="friend-card">
+                <img src="{{ friend.profile_picture.url }}" alt="Profile Picture" class="friend-picture">
+                <div class="friend-info">
+                    <span class="friend-username">{{ friend.username }}</span>
+                </div>
             </div>
+            {% empty %}
+                <p class="no-friends">No friends yet.</p>
+            {% endfor %}
         </div>
         <div id="map"></div>
     </div>
@@ -95,12 +54,20 @@
         function showPosition(position) {
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
+
+            console.log(lat, " / ", lon);
             
             // Haritanın merkezi yeni lokasyona göre güncellenir
             map.setView([lat, lon], 16);
+
+            const transparentIcon = L.icon({
+                iconUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+                iconSize: [0, 0],  // İkon boyutunu 0 yaparak tamamen görünmez hale getirin
+                iconAnchor: [0, 0]
+            });
             
             // Marker eklenir ve profil fotoğrafı ile kullanıcı adı popup'a eklenir
-            L.marker([lat, lon]).addTo(map)
+            L.marker([lat, lon], { icon: transparentIcon }).addTo(map)
                 .bindPopup(`<img src="${profileImage}" alt="Profile Image" width="35" height="35" style="border-radius: 50%;margin-right:5px"><b>  ${username}</b>`)
                 .openPopup();
         }

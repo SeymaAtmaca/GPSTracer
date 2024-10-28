@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 from .forms import CustomUserCreationForm, CustomUserChangeForm, UserSearchForm
 from django.http import JsonResponse
 from django.db.models import Q
-from .models import FriendRequest, Notification
+from .models import FriendRequest, Notification, Location
 from datetime import datetime
 
 User = get_user_model()
@@ -152,8 +152,19 @@ def user_profile(request):
     return render(request, 'tracer/profile.html', context)
 
 
+@login_required
 def map(request):
-    return render(request, 'tracer/map.html')
+    user = request.user;
+    friends = get_user_friends(user);
+    notifications = Notification.objects.filter(recipient=request.user, is_read=False)
+
+    context = {
+        'profile' : request.user,
+        'friends' : friends,
+        'notifications' : notifications
+    };
+    
+    return render(request, 'tracer/map.html', context)
 
 def logout_view(request):
     logout(request)
