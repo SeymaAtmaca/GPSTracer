@@ -115,9 +115,28 @@ def show_profile(request, id):
     return render(request, 'tracer/profile.html', {'profile': user, 'user_friends': user_friends})
 
 def visit_profile(request, id):
-    user = get_object_or_404(User, id='a5416044-e098-43ec-8288-a9be204bc1dc')  # ID'ye göre kullanıcıyı al
+    user = get_object_or_404(User, id=id)  # ID'ye göre kullanıcıyı al
+    if request.method == 'POST':
+        notification_id = request.POST.get('notificationId')
+        notification = Notification.objects.filter(id=notification_id)
+        notification.is_read=True
+        notification.save()
     return render(request, 'tracer/user.html', {'profile': user})
 
+def mark_as_read(request):
+    if request.method == 'POST':
+        notification_id = request.POST.get('notification_id')
+        
+        # Bildirimi bul ve okundu olarak işaretle
+        try:
+            notification = Notification.objects.get(id=notification_id)
+            notification.read = True
+            notification.save()
+            return JsonResponse({'status': 'success'})
+        except Notification.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Notification not found'}, status=404)
+    
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
 @login_required
 def user_profile(request):
@@ -158,9 +177,20 @@ def map(request):
     friends = get_user_friends(user);
     notifications = Notification.objects.filter(recipient=request.user, is_read=False)
 
+    friends_locations = []
+    for friend in friends:
+        last_location = Location.objects.filter(user=friend).order_by('-timestamp').first()
+        if last_location:
+            friends_locations.append({
+                'username': friend.username,
+                'profile_picture': friend.profile_picture.url if friend.profile_picture else None,
+                'latitude' : last_location.latitude,
+                'longitude' : last_location.longitude,
+            })
+        
     context = {
         'profile' : request.user,
-        'friends' : friends,
+        'friends_locations' : friends_locations,
         'notifications' : notifications
     };
     

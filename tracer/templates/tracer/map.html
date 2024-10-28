@@ -12,9 +12,9 @@
     {% include 'tracer/partials/_navbar.html' %}
     <div id="container">
         <div id="friend-list">
-            {% for friend in friends %}
+            {% for friend in friends_locations %}
             <div class="friend-card">
-                <img src="{{ friend.profile_picture.url }}" alt="Profile Picture" class="friend-picture">
+                <img src="{{ friend.profile_picture }}" alt="Profile Picture" class="friend-picture">
                 <div class="friend-info">
                     <span class="friend-username">{{ friend.username }}</span>
                 </div>
@@ -28,67 +28,68 @@
     
     <script src="{% static 'leaflet/leaflet.js' %}"></script>
     <script>
+        const friendsLocations = {{ friends_locations|safe }};
         const username = "{{ user.username }}";
         const profileImage = "{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'default.jpg' %}{% endif %}";
 
         // Harita tanımlaması
         const map = L.map('map').setView([51.505, -0.09], 13);
-
+    
         // Harita için tile layer tanımlaması
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Kullanıcı lokasyonunu al
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(showPosition, showError, {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
-            });
-        } else {
-            console.log("Bu tarayıcı lokasyon servislerini desteklemiyor.");
-        }
-
-        // Lokasyon başarıyla alındığında
-        function showPosition(position) {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-
-            console.log(lat, " / ", lon);
-            
-            // Haritanın merkezi yeni lokasyona göre güncellenir
-            map.setView([lat, lon], 16);
-
-            const transparentIcon = L.icon({
+        const transparentIcon = L.icon({
                 iconUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
-                iconSize: [0, 0],  // İkon boyutunu 0 yaparak tamamen görünmez hale getirin
+                iconSize: [0, 0],  
                 iconAnchor: [0, 0]
             });
-            
-            // Marker eklenir ve profil fotoğrafı ile kullanıcı adı popup'a eklenir
-            L.marker([lat, lon], { icon: transparentIcon }).addTo(map)
-                .bindPopup(`<img src="${profileImage}" alt="Profile Image" width="35" height="35" style="border-radius: 50%;margin-right:5px"><b>  ${username}</b>`)
-                .openPopup();
-        }
 
-        // Hata olduğunda
-        function showError(error) {
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    console.log("Kullanıcı lokasyon paylaşımını reddetti.");
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    console.log("Lokasyon bilgisi mevcut değil.");
-                    break;
-                case error.TIMEOUT:
-                    console.log("Lokasyon bilgisi alınamadı.");
-                    break;
-                case error.UNKNOWN_ERROR:
-                    console.log("Bilinmeyen bir hata oluştu.");
-                    break;
-            }
+    
+        // Kullanıcı lokasyonunu al ve göster
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                map.setView([lat, lon], 16);
+
+                L.circleMarker([lat,lon], {
+                    color: 'blue',
+                    radius : 4
+                }).addTo(map)
+                .bindPopup(`<img src="${profileImage}" alt="Profile Image" width="35" height="35" style="border-radius: 50%;margin-right:5px"><b>  ${username}</b>`)
+                    .openPopup();
+    
+                const userIcon = L.icon({
+                    iconUrl: profileImage,
+                    iconSize: [35, 35],
+                    iconAnchor: [17, 34],
+                    popupAnchor: [0, -34]
+                });
+            });
         }
+    
+        // Arkadaşların konumlarını haritaya ekle
+        friendsLocations.forEach(friend => {
+            if (friend.latitude && friend.longitude) {
+                map.setView([friend.latitude, friend.longitude], 16);
+                const friendIcon = L.icon({
+                    iconUrl: friend.profile_picture || "{% static 'default.jpg' %}",
+                    iconSize: [35, 35],
+                    iconAnchor: [17, 34],
+                    popupAnchor: [0, -34]
+                });
+
+                L.circleMarker([friend.latitude,friend.longitude], {
+                    color: 'blue',
+                    radius : 4
+                }).addTo(map)
+                .bindPopup(`<img src="${friend.profile_picture}" alt="Profile Image" width="35" height="35" style="border-radius: 50%;margin-right:5px"><b>  ${friend.username}</b>`)
+                .openPopup();
+            }
+        });
     </script>
+    
 </body>
 </html>

@@ -36,7 +36,7 @@
                         <div class="notification-item">
                             <p>{{ notification.message }}</p>
                             <small>{{ notification.created_date }}</small>
-                            <a href="{{ notification.link }}">Detaylar</a>
+                            <a href="{{ notification.link }}" class="notification-link">Detaylar</a>
                         </div>
                     {% endfor %}
               
@@ -71,6 +71,23 @@
                     $('.notification-dropdown').removeClass('active');
                 }
             });
+
+            $('.notification-link').on('click', function(event){
+                const notificationId = $(this).data('id');
+                const dataUrl = $(this).attr('href')
+                const start = dataUrl.indexOf("/user/") + 6; 
+                const end = dataUrl.lastIndexOf("/");
+                const id = dataUrl.substring(start, end);
+                $.ajax({
+                    url : '/visit_profile',
+                    method : 'POST',
+                    data : {
+                        'notificationId' : notificationId,
+                        'id' : id,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    }
+                })
+            })
         });
     </script>
 </body>
