@@ -14,10 +14,13 @@
         <div id="friend-list">
             {% for friend in friends_locations %}
             <div class="friend-card">
+                
                 <img src="{{ friend.profile_picture }}" alt="Profile Picture" class="friend-picture">
-                <div class="friend-info">
-                    <span class="friend-username">{{ friend.username }}</span>
-                </div>
+                <a href="{% url 'visit_profile' friend.id %}" class="friend-link">
+                    <div class="friend-info">
+                        <span class="friend-username">{{ friend.username }}</span>
+                    </div>
+                </a>
             </div>
             {% empty %}
                 <p class="no-friends">No friends yet.</p>

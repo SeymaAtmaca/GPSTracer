@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-
+    {% load static %}
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    {% load static %}
     <link rel="stylesheet" href="{% static 'css/profile.css' %}">
 </head>
 
@@ -16,9 +16,7 @@
         <div class="row justify-content-center">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header">
-                        <h2>Profile</h2>
-                    </div>
+                
                     <div class="card-body">
                         <div class="row">
                             <!-- Profile Information -->
@@ -47,7 +45,7 @@
                                     <h4>Friends List:</h4>
                                     <ul class="list-group">
                                         {% for friend in friends %}
-                                        <li class="list-group-item">
+                                        <li class="friend-card">
                                             <a href="{% url 'visit_profile' friend.id %}" class="friend-link">
                                                 <img src="{{ friend.profile_picture.url }}" alt="Profile Picture" class="friend-picture" style="border-radius: 50%; width: 50px; height: 50px;">
                                                 <span class="friend-username">{{ friend.username }}</span>

@@ -4,41 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile</title>
+   
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/profile.css' %}">
-    <style>
-        .request-buttons button {
-            display: inline;
-            width: 30%;
-            margin-bottom: 10px;
-            background-color: #58a6ff !important;
-            color: #0d1117 !important;
-            border: none !important;
-            padding: 10px !important;
-            border-radius: 5px !important;
-            font-size:7pt;
-            margin-top:20px;
-            
-        }
-
-        .request-buttons button:hover {
-            background-color: #4f8dff !important;
-            
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/user.css' %}">
 </head>
 
 <body>
     {% include 'tracer/partials/_navbar.html' %}
+    
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header">
-                        <h2>Profile</h2>
-                    </div>
+                   
                     
                     <div class="card-body">
                         <div class="row">
@@ -54,30 +34,32 @@
 
                                    
                                 </div>
-                                <div class="request-buttons container">  
+                                {% if is_friend == 'False' %}
+                                <div class="request-buttons ">  
                                     <button class="request-buttons accept" data-profile-id="{{profile.id}}">Accept Request</button>
                                     <button class="request-buttons discard" data-profile-id="{{profile.id}}">Discard Request</button>
                                     <button class="request-buttons message" data-profile-id="{{profile.id}}">Send a Message</button>
                                 </div>
+                                {% endif %}
                             </div>
                             
                             <div class="col-md-8">
-                                {% if profile.show_locations %}
+                                {% if profile.show_locations or is_friend %}
                                 <div class="friends-section">
                                     <h4>Friends List:</h4>
                                     <ul class="list-group">
                                         {% if profile.person_friends.all %}
                                             {% for friend_relation in profile.person_friends.all %}
-                                                <li class="list-group-item">{{ friend_relation.friendId.username }}</li>
+                                                <li class="friend-card">{{ friend_relation.friendId.username }}</li>
                                             {% endfor %}
                                         {% else %}
-                                            <li class="list-group-item">No friends yet.</li>
+                                            <li class="friend-card">No friends yet.</li>
                                         {% endif %}
                                     </ul>
                                 </div>
-                            {% else %}
-                                <p>Locations are hidden.</p>
-                            {% endif %}
+                                {% else %}
+                                    <p>Locations are hidden.</p>
+                                {% endif %}
                             
                             </div>
                         </div>

@@ -115,13 +115,31 @@ def show_profile(request, id):
     return render(request, 'tracer/profile.html', {'profile': user, 'user_friends': user_friends})
 
 def visit_profile(request, id):
-    user = get_object_or_404(User, id=id)  # ID'ye göre kullanıcıyı al
+    # ID'ye göre kullanıcıyı al
+    user = get_object_or_404(User, id=id)
+    
+    # Ziyaret eden kişi ve profil sahibi arkadaş mı?
+    is_friend = Friendship.objects.filter(
+        sender=user, receiver=request.user, status='accepted'
+    ).exists() or Friendship.objects.filter(
+        sender=request.user, receiver=user, status='accepted'
+    ).exists()
+
+    # Bildirim varsa okundu olarak işaretle
     if request.method == 'POST':
         notification_id = request.POST.get('notificationId')
-        notification = Notification.objects.filter(id=notification_id)
-        notification.is_read=True
-        notification.save()
-    return render(request, 'tracer/user.html', {'profile': user})
+        notification = Notification.objects.filter(id=notification_id).first()
+        if notification:
+            notification.is_read = True
+            notification.save()
+    
+    # Şablona is_friend değişkenini de ekle
+    context = {
+        'profile': user,
+        'is_friend': is_friend,
+    }
+
+    return render(request, 'tracer/user.html', context)
 
 def mark_as_read(request):
     if request.method == 'POST':
@@ -159,7 +177,7 @@ def user_profile(request):
         return JsonResponse({'results': results})
 
     notifications = Notification.objects.filter(recipient=request.user, is_read=False)
-    friends = get_user_friends(request.user.id)
+    friends = get_user_friends(request.user)
 
     context = {
         'profile': request.user,
@@ -174,7 +192,7 @@ def user_profile(request):
 @login_required
 def map(request):
     user = request.user;
-    friends = get_user_friends(user);
+    friends = get_user_friends(request.user);
     notifications = Notification.objects.filter(recipient=request.user, is_read=False)
 
     friends_locations = []
@@ -182,6 +200,7 @@ def map(request):
         last_location = Location.objects.filter(user=friend).order_by('-timestamp').first()
         if last_location:
             friends_locations.append({
+                'id': str(friend.id),
                 'username': friend.username,
                 'profile_picture': friend.profile_picture.url if friend.profile_picture else None,
                 'latitude' : last_location.latitude,
@@ -193,7 +212,6 @@ def map(request):
         'friends_locations' : friends_locations,
         'notifications' : notifications
     };
-    
     return render(request, 'tracer/map.html', context)
 
 def logout_view(request):
