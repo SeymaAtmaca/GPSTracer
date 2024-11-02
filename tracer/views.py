@@ -132,10 +132,12 @@ def visit_profile(request, id):
         if notification:
             notification.is_read = True
             notification.save()
-    
+    user_friends = get_user_friends(user)
+
     # Şablona is_friend değişkenini de ekle
     context = {
         'profile': user,
+        'user_friends' : user_friends,
         'is_friend': is_friend,
     }
 

@@ -60,4 +60,15 @@ class Location(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - {self.latitude}, {self.longitude}'
- 
+
+class Lists(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=150)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+class ListItems(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    list_name = models.ForeignKey(Lists, on_delete=models.CASCADE)
+    item_name = models.CharField(max_length=200)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
