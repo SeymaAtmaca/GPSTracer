@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import User, Notification, FriendRequest, Location, Friendship
+from .models import User, Notification, FriendRequest, Location, Friendship, Lists
 
 # admin.site.register(User)
 # admin.site.register(FriendRequest)
@@ -25,3 +25,8 @@ class FriendsAdmin(admin.ModelAdmin):
 @admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
     list_display = ('id', 'latitude', 'longitude', 'timestamp',)
+
+
+@admin.register(Lists)
+class ListsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name',)

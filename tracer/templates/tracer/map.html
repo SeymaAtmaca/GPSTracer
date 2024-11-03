@@ -1,10 +1,10 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leaflet Map</title>
+    {% load static %}
     <link rel="stylesheet" href="{% static 'leaflet/leaflet.css' %}"/>
     <link rel="stylesheet" href="{% static 'css/map.css' %}">
 </head>
@@ -14,7 +14,6 @@
         <div id="friend-list">
             {% for friend in friends_locations %}
             <div class="friend-card">
-                
                 <img src="{{ friend.profile_picture }}" alt="Profile Picture" class="friend-picture">
                 <a href="{% url 'visit_profile' friend.id %}" class="friend-link">
                     <div class="friend-info">
@@ -28,13 +27,30 @@
         </div>
         <div id="map"></div>
     </div>
-    
+
+    <!-- Popup Modal -->
+    <div id="listModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Liste Seçenekleri</h3>
+            <button id="addToList">Mevcut Listeye Ekle</button>
+            <button id="createList">Yeni Liste Kur</button>
+
+            <!-- Yeni Liste Formu -->
+            <div id="newListForm" style="display:none; margin-top:10px;">
+                <input type="text" id="listName" placeholder="Liste Adı">
+                <button id="createButton">Kur</button>
+                <button id="cancelButton">İptal</button>
+            </div>
+        </div>
+    </div>
+
     <script src="{% static 'leaflet/leaflet.js' %}"></script>
     <script>
         const friendsLocations = {{ friends_locations|safe }};
         const username = "{{ user.username }}";
         const profileImage = "{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'default.jpg' %}{% endif %}";
-
+    
         // Harita tanımlaması
         const map = L.map('map').setView([51.505, -0.09], 13);
     
@@ -42,57 +58,221 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
-
-        const transparentIcon = L.icon({
-                iconUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
-                iconSize: [0, 0],  
-                iconAnchor: [0, 0]
-            });
-
     
-        // Kullanıcı lokasyonunu al ve göster
+        // Kullanıcı konumunu göster
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(position => {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
-                map.setView([lat, lon], 16);
-
-                L.circleMarker([lat,lon], {
-                    color: 'blue',
-                    radius : 4
-                }).addTo(map)
-                .bindPopup(`<img src="${profileImage}" alt="Profile Image" width="35" height="35" style="border-radius: 50%;margin-right:5px"><b>  ${username}</b>`)
+                map.setView([lat, lon], 17);
+                L.circleMarker([lat, lon], { color: 'blue', radius: 4 }).addTo(map)
+                    .bindPopup(`<img src="${profileImage}" alt="Profile Image" width="55" height="55" style="border-radius: 50%;margin-right:5px"><b>  ${username}</b>`)
                     .openPopup();
-    
-                const userIcon = L.icon({
-                    iconUrl: profileImage,
-                    iconSize: [35, 35],
-                    iconAnchor: [17, 34],
-                    popupAnchor: [0, -34]
-                });
             });
         }
     
         // Arkadaşların konumlarını haritaya ekle
         friendsLocations.forEach(friend => {
             if (friend.latitude && friend.longitude) {
-                map.setView([friend.latitude, friend.longitude], 16);
-                const friendIcon = L.icon({
-                    iconUrl: friend.profile_picture || "{% static 'default.jpg' %}",
-                    iconSize: [35, 35],
-                    iconAnchor: [17, 34],
-                    popupAnchor: [0, -34]
-                });
-
-                L.circleMarker([friend.latitude,friend.longitude], {
-                    color: 'blue',
-                    radius : 4
+                L.circleMarker([friend.latitude, friend.longitude], {
+                    color: 'blue', radius: 4
                 }).addTo(map)
-                .bindPopup(`<img src="${friend.profile_picture}" alt="Profile Image" width="35" height="35" style="border-radius: 50%;margin-right:5px"><b>  ${friend.username}</b>`)
-                .openPopup();
+                    .bindPopup(`<img src="${friend.profile_picture}" alt="Profile Image" width="35" height="35" style="border-radius: 50%;margin-right:5px"><b>  ${friend.username}</b>`)
+                    .openPopup();
             }
+        });
+    
+        // Double-click olayında yeni liste oluşturma popup'ı aç
+        map.on('dblclick', function (e) {
+            const lat = e.latlng.lat;
+            const lon = e.latlng.lng;
+    
+            // Popup içeriği
+            const popupContent = `
+                <div style="text-align: center;">
+                    <button id="addToExistingList" class="options-btn">Mevcut Listeye Ekle</button>
+                    <br>
+                    <button id="createNewList" class="options-btn">Yeni Liste Oluştur</button>
+                </div>
+            `;
+    
+            // Popup oluştur
+            const popup = L.popup()
+                .setLatLng(e.latlng)
+                .setContent(popupContent)
+                .openOn(map);
+    
+            // Mevcut listeye ekleme butonuna tıklama olayı
+            document.getElementById('addToExistingList').onclick = function () {
+                // Kullanıcının listelerini çek ve göster
+               
+            };
+    
+            // Yeni liste oluşturma butonuna tıklama olayı
+            document.getElementById('createNewList').onclick = function () {
+                // Popup içeriği ile form
+                const formContent = `
+                    <div class="popup-content">
+                        <h4>Yeni Liste Oluştur</h4>
+                        <form id="createListForm" method="POST" action="/create-list/">
+                            
+                            <input type="text" id="listName" name="name" placeholder="Liste adını girin" >
+                            <br>
+                            <button type="submit">Oluştur</button>
+                            <button type="button" onclick="this.closest('.leaflet-popup').remove()">İptal</button>
+                        </form>
+                    </div>
+                `;
+    
+                // Yeni liste oluşturma popup'ını aç
+                const formPopup = L.popup()
+                    .setLatLng(e.latlng)
+                    .setContent(formContent)
+                    .openOn(map);
+    
+                // Form gönderme işlemi
+                document.getElementById('createListForm').onsubmit = function (event) {
+                    event.preventDefault();
+                    const listName = document.getElementById('listName').value;
+                    
+    
+                    // Yeni listeyi sunucuya gönder
+                    fetch("{% url 'create_list' %}", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": "{{ csrf_token }}"
+                        },
+                        body: JSON.stringify({
+                            name: listName,
+                            latitude: lat,
+                            longitude: lon
+                        })
+                    }).then(response => {
+                        if (response.ok) {
+                            alert("Liste başarıyla oluşturuldu!");
+                            formPopup.remove(); // Yeni liste form popup'ını kapat
+                        } else {
+                            alert("Bir hata oluştu.");
+                        }
+                    });
+                };
+            };
         });
     </script>
     
+    
 </body>
+
+<style>
+.leaflet-popup {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.leaflet-popup-content-wrapper {
+    background-color: #2a2f3d;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    color: #c2d5bc;
+    font-size: 12pt;
+}
+
+.leaflet-popup-tip {
+    background-color: #3a3f4f;
+}
+
+.leaflet-popup-close-button {
+    background-color: transparent;
+    border: none;
+    color: #c2d5bc;
+    font-size: 18px;
+}
+
+.leaflet-popup-close-button:hover {
+    color: #ffffff;
+}
+
+.popup-content {
+    text-align: center;
+    padding: 20px;
+    background-color: #3a3f4f;
+    color: #c2d5bc;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.popup-content h4 {
+    margin: 0 0 15px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.popup-content input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #21262d;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.popup-content button {
+    padding: 10px 20px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.options-btn {
+    background-color: #454b5d;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.options-btn:hover {
+    background-color: #5c6279;
+    transform: scale(1.05);
+}
+
+.popup-content button[type="submit"] {
+    background-color: #5abf72;
+    color: #ffffff;
+    transition: background-color 0.3s;
+}
+
+.popup-content button[type="button"] {
+    background-color: #d55d69;
+    color: #ffffff;
+    transition: background-color 0.3s;
+}
+
+.popup-content button:hover {
+    opacity: 0.9;
+}
+
+.popup-content button[type="submit"]:hover {
+    background-color: #81c38f;
+}
+
+.popup-content button[type="button"]:hover {
+    background-color: #cb7881;
+}
+
+</style>
 </html>

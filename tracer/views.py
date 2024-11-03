@@ -10,8 +10,11 @@ from django.contrib.auth import get_user_model
 from .forms import CustomUserCreationForm, CustomUserChangeForm, UserSearchForm
 from django.http import JsonResponse
 from django.db.models import Q
-from .models import FriendRequest, Notification, Location
+from .models import FriendRequest, Notification, Location, Lists, ListItems
 from datetime import datetime
+from .forms import ListCreateForm, ListItemForm
+import json
+from django.views.decorators.csrf import csrf_exempt
 
 User = get_user_model()
 
@@ -215,6 +218,43 @@ def map(request):
         'notifications' : notifications
     };
     return render(request, 'tracer/map.html', context)
+
+
+def create_list(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        name = data.get("name")
+        latitude = data.get("latitude")
+        longitude = data.get("longitude")
+
+        if not name:
+            return JsonResponse({"error": "Name field is required."}, status=400)
+
+
+        list_form = ListCreateForm({'name': name})  # Formdan gelen verileri al
+        print(list_form)
+        item_form = ListItemForm(request.POST)     # Eğer liste öğesi eklemek istiyorsanız
+        print("bb")
+        if list_form.is_valid():  # Form geçerliyse
+            # Yeni liste oluştur
+            print("cc")
+            new_list = list_form.save(commit=False)
+            new_list.user = request.user  # Kullanıcıyı ilişkilendir
+            new_list.save()  # Listeyi kaydet
+            print("a")
+            # Eğer ListItem eklemek istiyorsanız
+            if item_form.is_valid():
+                # Yeni liste öğesi oluştur
+                list_item = item_form.save(commit=False)
+                print("list : ", list_item)
+                list_item.list_name = new_list  # Listeyi ilişkilendir
+                list_item.save()  # Liste öğesini kaydet
+
+            return JsonResponse({'success': True, 'list_id': new_list.id})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
+
+
 
 def logout_view(request):
     logout(request)
