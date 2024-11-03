@@ -199,6 +199,7 @@ def map(request):
     user = request.user;
     friends = get_user_friends(request.user);
     notifications = Notification.objects.filter(recipient=request.user, is_read=False)
+    lists = Lists.objects.filter(user=user)
 
     friends_locations = []
     for friend in friends:
@@ -211,11 +212,12 @@ def map(request):
                 'latitude' : last_location.latitude,
                 'longitude' : last_location.longitude,
             })
-        
+ 
     context = {
         'profile' : request.user,
         'friends_locations' : friends_locations,
-        'notifications' : notifications
+        'notifications' : notifications,
+        'lists' : lists
     };
     return render(request, 'tracer/map.html', context)
 
@@ -224,35 +226,44 @@ def create_list(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         name = data.get("name")
-        latitude = data.get("latitude")
-        longitude = data.get("longitude")
 
         if not name:
             return JsonResponse({"error": "Name field is required."}, status=400)
 
-
         list_form = ListCreateForm({'name': name})  # Formdan gelen verileri al
-        print(list_form)
-        item_form = ListItemForm(request.POST)     # Eğer liste öğesi eklemek istiyorsanız
-        print("bb")
         if list_form.is_valid():  # Form geçerliyse
             # Yeni liste oluştur
-            print("cc")
             new_list = list_form.save(commit=False)
             new_list.user = request.user  # Kullanıcıyı ilişkilendir
             new_list.save()  # Listeyi kaydet
-            print("a")
-            # Eğer ListItem eklemek istiyorsanız
-            if item_form.is_valid():
-                # Yeni liste öğesi oluştur
-                list_item = item_form.save(commit=False)
-                print("list : ", list_item)
-                list_item.list_name = new_list  # Listeyi ilişkilendir
-                list_item.save()  # Liste öğesini kaydet
-
             return JsonResponse({'success': True, 'list_id': new_list.id})
     
     return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
+
+@csrf_exempt
+def create_list_item(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            list_name = data.get("list_name")
+            item_name = data.get("item_name")  # Use the correct key
+            latitude = data.get("latitude")
+            longitude = data.get("longitude")
+
+            item_form = ListItemForm({
+                'list_name': list_name,
+                'item_name': item_name,  # Use the correct key
+                'latitude': latitude,
+                'longitude': longitude
+            })
+
+            if item_form.is_valid():
+                new_list = item_form.save(commit=False)
+                return JsonResponse({'success': True, 'item_id': new_list.id})
+            return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
 
 
 

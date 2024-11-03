@@ -13,5 +13,7 @@ urlpatterns = [
     # path('profile/<uuid:id>/', views.show_profile, name='show_profile'),
     path('user/<uuid:id>/', views.visit_profile, name='visit_profile'),
     path('map/', views.map, name='map'),
+    path('create-list/', views.create_list, name='create_list'),
+    path('create-list-item/', views.create_list_item, name='create_list_item'),
     
 ]
