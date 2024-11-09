@@ -9,7 +9,7 @@ from .models import User, Friendship
 from django.contrib.auth import get_user_model
 from .forms import CustomUserCreationForm, CustomUserChangeForm, UserSearchForm
 from django.http import JsonResponse
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from .models import FriendRequest, Notification, Location, Lists, ListItems
 from datetime import datetime
 from .forms import ListCreateForm, ListItemForm
@@ -183,14 +183,30 @@ def user_profile(request):
 
     notifications = Notification.objects.filter(recipient=request.user, is_read=False)
     friends = get_user_friends(request.user)
+    lists_with_items = Lists.objects.filter(user=request.user).prefetch_related(
+        Prefetch('listitems_set', queryset=ListItems.objects.all())
+    )
+
+    # Prepare context data
+    lists_data = []
+    for list_obj in lists_with_items:
+        items = list_obj.listitems_set.all()  # Get associated items
+        list_data = {
+            'id': list_obj.id,
+            'name': list_obj.name,
+            'items': [{'id': item.id, 'name': item.item_name, 'latitude': item.latitude, 'longitude': item.longitude} for item in items]
+        }
+        lists_data.append(list_data)
 
     context = {
         'profile': request.user,
         'friends': friends,
         'search_form': search_form,
         'notifications': notifications,
+        'lists' : lists_data
         
     }
+
     return render(request, 'tracer/profile.html', context)
 
 
@@ -230,12 +246,12 @@ def create_list(request):
         if not name:
             return JsonResponse({"error": "Name field is required."}, status=400)
 
-        list_form = ListCreateForm({'name': name})  # Formdan gelen verileri al
-        if list_form.is_valid():  # Form geçerliyse
+        list_form = ListCreateForm({'name': name})  
+        if list_form.is_valid():  
             # Yeni liste oluştur
             new_list = list_form.save(commit=False)
-            new_list.user = request.user  # Kullanıcıyı ilişkilendir
-            new_list.save()  # Listeyi kaydet
+            new_list.user = request.user 
+            new_list.save() 
             return JsonResponse({'success': True, 'list_id': new_list.id})
     
     return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
@@ -244,26 +260,57 @@ def create_list(request):
 def create_list_item(request):
     if request.method == 'POST':
         try:
+            # JSON verisini al
             data = json.loads(request.body)
-            list_name = data.get("list_name")
-            item_name = data.get("item_name")  # Use the correct key
-            latitude = data.get("latitude")
-            longitude = data.get("longitude")
+            list_id = data.get("list_name")      # Liste ID'si
+            item_name = data.get("item_name")    # Öğe adı
+            latitude = data.get("latitude")       # Enlem
+            longitude = data.get("longitude")     # Boylam
 
-            item_form = ListItemForm({
-                'list_name': list_name,
-                'item_name': item_name,  # Use the correct key
-                'latitude': latitude,
-                'longitude': longitude
+            # Gerekli alanların kontrolü
+            if not all([list_id, item_name, latitude, longitude]):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Tüm alanlar gereklidir.'
+                }, status=400)
+
+            # Liste nesnesini bul
+            try:
+                list_obj = Lists.objects.get(id=list_id, user=request.user)
+            except Lists.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Liste bulunamadı.'
+                }, status=404)
+
+            # Yeni liste öğesi oluştur
+            list_item = ListItems.objects.create(
+                list_name=list_obj,
+                item_name=item_name,
+                latitude=latitude,
+                longitude=longitude
+            )
+
+            return JsonResponse({
+                'success': True,
+                'item_id': str(list_item.id)
             })
 
-            if item_form.is_valid():
-                new_list = item_form.save(commit=False)
-                return JsonResponse({'success': True, 'item_id': new_list.id})
-            return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
         except json.JSONDecodeError:
-            return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
-    return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+            return JsonResponse({
+                'success': False,
+                'error': 'Geçersiz JSON verisi.'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+
+    return JsonResponse({
+        'success': False,
+        'error': 'İzin verilmeyen metod.'
+    }, status=405)
 
 
 

@@ -96,52 +96,41 @@
             document.getElementById('addToExistingList').onclick = function () {
                 let formContent = `
                     <div class="popup-content">
-                        <form id="createListItem" method="POST" action="/create-list-item/">
+                        <form id="createListItemForm">
                             <label for="listSelect">Mevcut Listeler:</label>
-                            <select id="listSelect" name="list_id">
+                            <select id="listSelect" name="list_name" required>
                                 <option value="">Seçiniz</option>
                                 {% for list in lists %}
                                     <option value="{{ list.id }}">{{ list.name }}</option>
                                 {% endfor %}
                             </select>
                             <br>
-                            <input type="text" id="itemName" name="name" placeholder="Liste adını girin">
+                            <input type="text" id="itemName" name="item_name" placeholder="Öğe adını girin" required>
                             <br>
-                            <button type="submit">Ekle</button>
+                            <button type="submit" id="submitListItem">Ekle</button>
                             <button type="button" onclick="this.closest('.leaflet-popup').remove()">İptal</button>
                         </form>
                     </div>
                 `;
 
-
-                // Popup içeriğini formContent ile güncelle
+                // Popup içeriğini güncelle
                 const popup = L.popup()
                     .setLatLng(e.latlng)
                     .setContent(formContent)
                     .openOn(map);
 
-                // Yeni elemanı sunucuya gönder
-                document.getElementById('submitBtn').onclick = function (event) {
-                    event.preventDefault(); // Formun varsayılan gönderimini engelle
-
+                // Form gönderme işleyicisi
+                document.getElementById('createListItemForm').onsubmit = function(event) {
+                    event.preventDefault();
+                    
                     const listSelect = document.getElementById('listSelect');
-                    const selectedListName = listSelect.options[listSelect.selectedIndex].text; // Seçilen listenin adını al
-                    const itemName = document.getElementById('itemName').value; // Liste adı
-                    const lat = e.latlng.lat; // Latitude
-                    const lon = e.latlng.lng; // Longitude
-
-                    // Eğer bir liste seçilmemişse uyarı ver
-                    if (!listSelect.value) {
-                        alert("Lütfen bir liste seçin.");
+                    const itemName = document.getElementById('itemName').value;
+                    
+                    if (!listSelect.value || !itemName) {
+                        alert("Lütfen tüm alanları doldurunuz.");
                         return;
                     }
 
-                    if (!selectedListName.value) {
-                        alert("Lütfen öğre ismi giriniz.");
-                        return;
-                    }
-
-                    // Fetch isteği
                     fetch("{% url 'create_list_item' %}", {
                         method: "POST",
                         headers: {
@@ -149,18 +138,25 @@
                             "X-CSRFToken": "{{ csrf_token }}"
                         },
                         body: JSON.stringify({
-                            list_name: selectedListName, // Seçilen listenin adını gönder
-                            item_name: itemName,
-                            latitude: lat,
-                            longitude: lon
+                            list_name: listSelect.value,  // Liste ID'si
+                            item_name: itemName,          // Öğe adı
+                            latitude: e.latlng.lat,       // Enlem
+                            longitude: e.latlng.lng       // Boylam
                         })
-                    }).then(response => {
-                        if (response.ok) {
-                            alert("Liste başarıyla oluşturuldu!");
-                            popup.remove(); // Yeni liste form popup'ını kapat
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert("Öğe başarıyla eklendi!");
+                            popup.remove();
+                            // İsterseniz burada haritayı güncelleyebilirsiniz
                         } else {
-                            alert("Bir hata oluştu.");
+                            alert(data.error || "Bir hata oluştu.");
                         }
+                    })
+                    .catch(error => {
+                        console.error('Hata:', error);
+                        alert("İşlem sırasında bir hata oluştu.");
                     });
                 };
             };

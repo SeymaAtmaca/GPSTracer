@@ -41,9 +41,22 @@
                                 <div class="col-md-8">
                                     <div class="lists-section">
                                         <h4>Lists:</h4>
-                                        <div class="list-card">
-                                            <div>lorem</div>
-                                        </div>
+                                        {% for list in lists %}
+                                            <div class="list-card">
+                                                <div>
+                                                    <p style="font-weight:bold">{{  list.name  }}</p>
+                                                    <ul>
+                                                        {% for item in list.items %}
+                                                        <li><a href="javascript:void(0);" 
+                                                            onclick="showOnMap({{ item.latitude }}, {{ item.longitude }})">
+                                                            {{ item.name }}
+                                                     </a></li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+
+                                            </div>
+                                        {% endfor %}
                                     </div>
     
                                 </div>
@@ -111,6 +124,9 @@
                     $('#searchResults').hide();
                 }
             });
+
+            
+
     
             // Arama sonuçlarını getir
             function fetchResults(query) {
