@@ -47,10 +47,19 @@
                                                     <p style="font-weight:bold">{{  list.name  }}</p>
                                                     <ul>
                                                         {% for item in list.items %}
-                                                        <li><a href="javascript:void(0);" 
-                                                            onclick="showOnMap({{ item.latitude }}, {{ item.longitude }})">
-                                                            {{ item.name }}
-                                                     </a></li>
+                                                        <li>
+                                                            <form method="POST" action="{% url 'map' %}" style="display: inline;">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="itemId" value="{{ item.id }}">
+                                                                <input type="hidden" name="itemLat" value="{{ item.latitude }}">
+                                                                <input type="hidden" name="itemLong" value="{{ item.longitude }}">
+                                                                <input type="hidden" name="itemName" value="{{ item.name }}">
+                                                                <button type="submit" class="btn btn-link p-0 m-0" style="text-decoration: none;">
+                                                                    {{ item.name }}
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                        
                                                         {% endfor %}
                                                     </ul>
                                                 </div>
@@ -188,6 +197,68 @@
                     $('#searchResults').hide();
                 }
             });
+
+            $(document).on('click', '.list-item-class', function (event) {
+                event.preventDefault();  // Prevent the default action (link navigation)
+                
+                var itemId = $(this).data('item-id');
+                var itemLat = $(this).data('item-latitude');
+                var itemLong = $(this).data('item-longitude');
+                var itemName = $(this).data('item-name');
+                
+                console.log("Lat : " + itemLat + " Long : " + itemLong);
+
+                $.ajax({
+                    url: "{% url 'map' %}",
+                    method: "POST",
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'active_user_id': activeUserId,
+                        'itemId': itemId,
+                        'itemLat': itemLat,
+                        'itemLong': itemLong,
+                        'itemName' : itemName
+                    },
+                    success: function (response) {
+                        // Form oluştur ve submit et
+                        var form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '/map';
+                        
+                        // CSRF token ekle
+                        var csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = 'csrfmiddlewaretoken';
+                        csrfInput.value = '{{ csrf_token }}';
+                        form.appendChild(csrfInput);
+                        
+                        // Diğer input'ları ekle
+                        var inputs = {
+                            'itemId': itemId,
+                            'itemLat': itemLat,
+                            'itemLong': itemLong,
+                            'itemName': itemName
+                        };
+                        
+                        for (var key in inputs) {
+                            var input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = key;
+                            input.value = inputs[key];
+                            form.appendChild(input);
+                        }
+                        
+                        document.body.appendChild(form);
+                        form.submit();
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Error sending map information: " + error);
+                    }
+                });
+            });
+
+
+
         });
     </script>
     

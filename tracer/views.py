@@ -212,8 +212,17 @@ def user_profile(request):
 
 @login_required
 def map(request):
-    user = request.user;
-    friends = get_user_friends(request.user);
+    show_item_location = False
+
+    if request.method == "POST" and request.POST.get('itemLat'):
+        item_location_lat = request.POST.get('itemLat')
+        item_location_long = request.POST.get('itemLong')
+        item_name = request.POST.get('itemName')
+        show_item_location = True
+        print("Item view from")
+
+    user = request.user
+    friends = get_user_friends(request.user)
     notifications = Notification.objects.filter(recipient=request.user, is_read=False)
     lists = Lists.objects.filter(user=user)
 
@@ -225,17 +234,28 @@ def map(request):
                 'id': str(friend.id),
                 'username': friend.username,
                 'profile_picture': friend.profile_picture.url if friend.profile_picture else None,
-                'latitude' : last_location.latitude,
-                'longitude' : last_location.longitude,
+                'latitude': last_location.latitude,
+                'longitude': last_location.longitude,
             })
- 
+
     context = {
-        'profile' : request.user,
-        'friends_locations' : friends_locations,
-        'notifications' : notifications,
-        'lists' : lists
-    };
+        'profile': user,
+        'friends_locations': friends_locations,
+        'notifications': notifications,
+        'lists': lists,
+        'show_item_location': show_item_location,
+    }
+
+    if show_item_location:
+        context.update({
+            'item_location_lat': item_location_lat,
+            'item_location_long': item_location_long,
+            'item_name': item_name,
+            'show_item_location': show_item_location,
+        })
+
     return render(request, 'tracer/map.html', context)
+    
 
 
 def create_list(request):

@@ -39,6 +39,8 @@
         const user_lists = "{{ lists|safe }}";
         const username = "{{ user.username }}";
         const profileImage = "{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'default.jpg' %}{% endif %}";
+        const showItemLocation = {{ show_item_location|lower }};
+
         
 
         // Harita tanımlaması
@@ -48,18 +50,8 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
+        console.log("{{ show_item_location }}")
     
-        // Kullanıcı konumunu göster
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(position => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
-                map.setView([lat, lon], 17);
-                L.circleMarker([lat, lon], { color: 'blue', radius: 4 }).addTo(map)
-                    .bindPopup(`<img src="${profileImage}" alt="Profile Image" width="55" height="55" style="border-radius: 50%;margin-right:5px"><b>  ${username}</b>`)
-                    .openPopup();
-            });
-        }
     
         // Arkadaşların konumlarını haritaya ekle
         friendsLocations.forEach(friend => {
@@ -71,6 +63,33 @@
                     .openPopup();
             }
         });
+
+        if(showItemLocation === true) {
+            
+            const lat = "{{ item_location_lat }}"
+            const lon = "{{ item_location_long }}"
+            const itemName = "{{ item_name }}"
+            console.log("item map")
+            console.log("lat : " + lat , " long : " + lon)
+            map.setView([lat, lon], 17);
+                L.circleMarker([lat, lon], { color: 'blue', radius: 4 }).addTo(map)
+                    .bindPopup(`<p>${itemName}</p>`)
+                    .openPopup();
+        
+    }else{
+        // Kullanıcı konumunu göster
+        if (navigator.geolocation) {
+            console.log("user map")
+            navigator.geolocation.getCurrentPosition(position => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                map.setView([lat, lon], 17);
+                L.circleMarker([lat, lon], { color: 'blue', radius: 4 }).addTo(map)
+                    .bindPopup(`<img src="${profileImage}" alt="Profile Image" width="55" height="55" style="border-radius: 50%;margin-right:5px"><b>  ${username}</b>`)
+                    .openPopup();
+            });
+        }
+    }
     
         // Double-click olayında yeni liste oluşturma popup'ı aç
         map.on('dblclick', function (e) {
@@ -210,6 +229,7 @@
                     
                 };
             };
+            
         });
     </script>
     
