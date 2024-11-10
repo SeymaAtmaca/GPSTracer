@@ -33,4 +33,4 @@ class ListsAdmin(admin.ModelAdmin):
 
 @admin.register(ListItems)
 class ListItemsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'list_name', 'item_name', 'latitude', 'longitude')
+    list_display = ('id', 'list_name', 'item_name', 'notes', 'latitude', 'longitude')

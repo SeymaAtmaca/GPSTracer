@@ -72,3 +72,4 @@ class ListItems(models.Model):
     item_name = models.CharField(max_length=200)
     latitude = models.FloatField()
     longitude = models.FloatField()
+    notes = models.CharField(max_length=255, default="")

@@ -215,11 +215,11 @@ def map(request):
     show_item_location = False
 
     if request.method == "POST" and request.POST.get('itemLat'):
+        item_id = request.POST.get('itemId')
         item_location_lat = request.POST.get('itemLat')
         item_location_long = request.POST.get('itemLong')
         item_name = request.POST.get('itemName')
         show_item_location = True
-        print("Item view from")
 
     user = request.user
     friends = get_user_friends(request.user)
@@ -244,14 +244,21 @@ def map(request):
         'notifications': notifications,
         'lists': lists,
         'show_item_location': show_item_location,
+        'item_note' : ""
     }
 
     if show_item_location:
+        print(item_id)
+        item_note = ListItems.objects.filter(id = item_id).first();
+        print(item_note)
+        item_note = item_note.notes;
+        print(item_note)
         context.update({
             'item_location_lat': item_location_lat,
             'item_location_long': item_location_long,
             'item_name': item_name,
             'show_item_location': show_item_location,
+            'item_note' : str(item_note)
         })
 
     return render(request, 'tracer/map.html', context)
@@ -284,6 +291,7 @@ def create_list_item(request):
             data = json.loads(request.body)
             list_id = data.get("list_name")      # Liste ID'si
             item_name = data.get("item_name")    # Öğe adı
+            item_note = data.get('item_note')
             latitude = data.get("latitude")       # Enlem
             longitude = data.get("longitude")     # Boylam
 
@@ -308,7 +316,8 @@ def create_list_item(request):
                 list_name=list_obj,
                 item_name=item_name,
                 latitude=latitude,
-                longitude=longitude
+                longitude=longitude,
+                notes = item_note
             )
 
             return JsonResponse({

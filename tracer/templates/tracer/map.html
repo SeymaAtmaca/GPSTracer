@@ -69,12 +69,18 @@
             const lat = "{{ item_location_lat }}"
             const lon = "{{ item_location_long }}"
             const itemName = "{{ item_name }}"
+            const notes = "{{ item_note|escapejs }}";
             console.log("item map")
             console.log("lat : " + lat , " long : " + lon)
             map.setView([lat, lon], 17);
-                L.circleMarker([lat, lon], { color: 'blue', radius: 4 }).addTo(map)
-                    .bindPopup(`<p>${itemName}</p>`)
-                    .openPopup();
+
+            L.circleMarker([lat, lon], { color: 'blue', radius: 4 }).addTo(map)
+                .bindPopup(`
+                    <p>${itemName}</p>
+                    <textarea id="notes" name="notes" readonly class="notes-area" rows="3" maxlength="500" placeholder="Notlar">${notes}</textarea>
+                `)
+                .openPopup();
+
         
     }else{
         // Kullanıcı konumunu göster
@@ -125,6 +131,7 @@
                             </select>
                             <br>
                             <input type="text" id="itemName" name="item_name" placeholder="Öğe adını girin" required>
+                            <textarea id="notes" name="notes" class="notes-area" rows="3" maxlength="500" placeholder="Notlar"></textarea>
                             <br>
                             <button type="submit" id="submitListItem">Ekle</button>
                             <button type="button" onclick="this.closest('.leaflet-popup').remove()">İptal</button>
@@ -144,6 +151,7 @@
                     
                     const listSelect = document.getElementById('listSelect');
                     const itemName = document.getElementById('itemName').value;
+                    const itemNote = document.getElementById('notes').value;
                     
                     if (!listSelect.value || !itemName) {
                         alert("Lütfen tüm alanları doldurunuz.");
@@ -159,6 +167,7 @@
                         body: JSON.stringify({
                             list_name: listSelect.value,  // Liste ID'si
                             item_name: itemName,          // Öğe adı
+                            item_note: itemNote,
                             latitude: e.latlng.lat,       // Enlem
                             longitude: e.latlng.lng       // Boylam
                         })
@@ -246,7 +255,7 @@
         .leaflet-popup-content-wrapper {
             background-color: #2a2f3d;
             border-radius: 10px;
-            padding: 15px;
+            padding: 10px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
             color: #c2d5bc;
             font-size: 12pt;
@@ -354,6 +363,22 @@
 
         .popup-content button[type="button"]:hover {
             background-color: #cb7881;
+        }
+
+        
+        .notes-area {
+            width: 100%;          
+            max-height: 80px;   
+            overflow-y: auto;     
+            resize: none;          
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 11px;
+            line-height: 1.5;
+            background-color: #21262d;
+            color: #ffffff;
+       
         }
 
 </style>
