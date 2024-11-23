@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 from .forms import CustomUserCreationForm, CustomUserChangeForm, UserSearchForm
 from django.http import JsonResponse
 from django.db.models import Q, Prefetch
-from .models import FriendRequest, Notification, Location, Lists, ListItems
+from .models import FriendRequest, Notification, Images, Location, Lists, ListItems
 from datetime import datetime
 from .forms import ListCreateForm, ListItemForm
 import json
@@ -117,8 +117,10 @@ def show_profile(request, id):
     user_friends = get_user_friends(user)
     return render(request, 'tracer/profile.html', {'profile': user, 'user_friends': user_friends})
 
+@login_required
 def visit_profile(request, id):
     # ID'ye göre kullanıcıyı al
+    
     user = get_object_or_404(User, id=id)
     
     # Ziyaret eden kişi ve profil sahibi arkadaş mı?
@@ -289,6 +291,7 @@ def create_list_item(request):
         try:
             # JSON verisini al
             data = json.loads(request.body)
+            files = request.FILES.getlist('images')
             list_id = data.get("list_name")      # Liste ID'si
             item_name = data.get("item_name")    # Öğe adı
             item_note = data.get('item_note')
@@ -319,6 +322,9 @@ def create_list_item(request):
                 longitude=longitude,
                 notes = item_note
             )
+
+            for image in files:
+                Images.objects.create(list_item=list_item, image=image)
 
             return JsonResponse({
                 'success': True,

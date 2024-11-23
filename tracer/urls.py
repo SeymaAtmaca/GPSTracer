@@ -1,6 +1,7 @@
 from django.urls import path, include
 from . import views
 
+
 urlpatterns = [
     path('', views.HomeView.as_view(), name='home'),
     path('login/', views.UserLoginView.as_view(), name='login'),
@@ -11,9 +12,9 @@ urlpatterns = [
     path('send_friend_request/', views.send_friend_request, name='send_friend_request'),
     path('add_friend/', views.send_friend_request, name='add_friend'),
     # path('profile/<uuid:id>/', views.show_profile, name='show_profile'),
-    path('user/<uuid:id>/', views.visit_profile, name='visit_profile'),
+     path('visit_profile/<uuid:id>', views.visit_profile, name='visit_profile'),
     path('map/', views.map, name='map'),
     path('create-list/', views.create_list, name='create_list'),
     path('create-list-item/', views.create_list_item, name='create_list_item'),
-    
+    path('user/<uuid:id>/', views.visit_profile, name='visit_profile'),
 ]

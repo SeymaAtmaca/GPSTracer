@@ -22,18 +22,21 @@
                             <!-- Profile Information -->
                             <div class="col-md-12">
                                 <div class="profile-section">
-                                    <div class="text-center">
+                                    <div class="background-section" 
+                                         style="background-image: url('{% if profile.background_picture %}{{ profile.background_picture.url }}{% else %}https://via.placeholder.com/1920x1080{% endif %}'); background-size: cover; background-position: center; background-repeat: no-repeat; height: 250px; border-radius:10px">
+                                    </div>
+                                    <div class="text-center" style="">
                                         {% if profile.profile_picture %}
-                                        <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="profile-picture" style="width: 150px; height: 150px;">
+                                            <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="profile-picture" style="width: 150px; height: 150px; margin-top: -75px; border-radius: 50%; border: 5px solid #0d1117;">
                                         {% else %}
-                                        <img src="https://via.placeholder.com/150" alt="Default Profile Picture" class="profile-picture" style="width: 150px; height: 150px;">
+                                            <img src="https://via.placeholder.com/150" alt="Default Profile Picture" class="profile-picture" style="width: 150px; height: 150px; margin-top: -75px; border-radius: 50%; border: 5px solid #0d1117;">
                                         {% endif %}
-                                        <h3>{{ profile.username }}</h3>
-    
+                                        <h3 style="color: #c9d1d9;">{{ profile.username }}</h3>
                                         <a href="{% url 'edit_profile' %}" class="btn btn-edit mb-3">Edit Profile</a>
                                     </div>
                                 </div>
                             </div>
+                            
                             
 
                             <div class="row col-md-12">
@@ -187,7 +190,7 @@
     
             // Profil görüntüleme
             $(document).on('click', '.view-profile-button', function () {
-                var targetId = $(this).data('target-id');
+                var targetId = $(this).data('target.id');
                 window.location.href = `/user/${targetId}/`;  // Profil sayfasına yönlendirme
             });
     
