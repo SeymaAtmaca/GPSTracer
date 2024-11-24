@@ -1,7 +1,7 @@
 from django.forms import forms
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User, Lists, ListItems
+from .models import User, Lists, ListItems, Images
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
@@ -24,4 +24,9 @@ class ListCreateForm(forms.ModelForm):
 class ListItemForm(forms.ModelForm):
     class Meta:
         model = ListItems
-        fields = ['item_name', 'latitude', 'longitude']
+        fields = ['item_name', 'latitude', 'longitude',]
+
+class ImageUploadForm(forms.ModelForm): 
+    class Meta: 
+        model = Images 
+        fields = ['image']

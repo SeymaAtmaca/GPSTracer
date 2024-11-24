@@ -121,7 +121,7 @@
             document.getElementById('addToExistingList').onclick = function () {
                 let formContent = `
                     <div class="popup-content">
-                        <form id="createListItemForm">
+                        <form id="createListItemForm" enctype="multipart/form-data">
                             <label for="listSelect">Mevcut Listeler:</label>
                             <select id="listSelect" name="list_name" required>
                                 <option value="">Seçiniz</option>
@@ -132,6 +132,8 @@
                             <br>
                             <input type="text" id="itemName" name="item_name" placeholder="Öğe adını girin" required>
                             <textarea id="notes" name="notes" class="notes-area" rows="3" maxlength="500" placeholder="Notlar"></textarea>
+                            <br>
+                            <input src="{{ object.image.url }}" type="file" id="image_files" name="images" multiple>
                             <br>
                             <button type="submit" id="submitListItem">Ekle</button>
                             <button type="button" onclick="this.closest('.leaflet-popup').remove()">İptal</button>
@@ -149,35 +151,41 @@
                 document.getElementById('createListItemForm').onsubmit = function(event) {
                     event.preventDefault();
                     
+                    // FormData nesnesi oluştur
+                    const formData = new FormData();
+                    
                     const listSelect = document.getElementById('listSelect');
                     const itemName = document.getElementById('itemName').value;
                     const itemNote = document.getElementById('notes').value;
+                    const imageFile = document.getElementById('image_files').files[0];
                     
                     if (!listSelect.value || !itemName) {
                         alert("Lütfen tüm alanları doldurunuz.");
                         return;
                     }
-
+                    
+                    // FormData'ya verileri ekle
+                    formData.append('list_name', listSelect.value);
+                    formData.append('item_name', itemName);
+                    formData.append('item_note', itemNote);
+                    formData.append('latitude', e.latlng.lat);
+                    formData.append('longitude', e.latlng.lng);
+                    if (imageFile) {
+                        formData.append('image', imageFile);
+                    }
+                    
                     fetch("{% url 'create_list_item' %}", {
                         method: "POST",
                         headers: {
-                            "Content-Type": "application/json",
                             "X-CSRFToken": "{{ csrf_token }}"
                         },
-                        body: JSON.stringify({
-                            list_name: listSelect.value,  // Liste ID'si
-                            item_name: itemName,          // Öğe adı
-                            item_note: itemNote,
-                            latitude: e.latlng.lat,       // Enlem
-                            longitude: e.latlng.lng       // Boylam
-                        })
+                        body: formData
                     })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
                             alert("Öğe başarıyla eklendi!");
                             popup.remove();
-                            // İsterseniz burada haritayı güncelleyebilirsiniz
                         } else {
                             alert(data.error || "Bir hata oluştu.");
                         }
@@ -187,7 +195,7 @@
                         alert("İşlem sırasında bir hata oluştu.");
                     });
                 };
-            };
+                            };
 
     
             // Yeni liste oluşturma butonuna tıklama olayı

@@ -15,6 +15,15 @@ from datetime import datetime
 from .forms import ListCreateForm, ListItemForm
 import json
 from django.views.decorators.csrf import csrf_exempt
+from PIL import Image as PILImage
+from io import BytesIO
+from django.core.files.uploadedfile import InMemoryUploadedFile
+import base64
+from io import BytesIO
+from django.core.files.base import ContentFile
+from django.http import JsonResponse
+import os
+from django.conf import settings
 
 User = get_user_model()
 
@@ -250,11 +259,8 @@ def map(request):
     }
 
     if show_item_location:
-        print(item_id)
         item_note = ListItems.objects.filter(id = item_id).first();
-        print(item_note)
         item_note = item_note.notes;
-        print(item_note)
         context.update({
             'item_location_lat': item_location_lat,
             'item_location_long': item_location_long,
@@ -289,14 +295,12 @@ def create_list(request):
 def create_list_item(request):
     if request.method == 'POST':
         try:
-            # JSON verisini al
-            data = json.loads(request.body)
-            files = request.FILES.getlist('images')
-            list_id = data.get("list_name")      # Liste ID'si
-            item_name = data.get("item_name")    # Öğe adı
-            item_note = data.get('item_note')
-            latitude = data.get("latitude")       # Enlem
-            longitude = data.get("longitude")     # Boylam
+            list_id = request.POST.get("list_name")
+            item_name = request.POST.get("item_name")
+            item_note = request.POST.get('item_note')
+            latitude = request.POST.get("latitude")
+            longitude = request.POST.get("longitude")
+            image_file = request.FILES.get('image')
 
             # Gerekli alanların kontrolü
             if not all([list_id, item_name, latitude, longitude]):
@@ -305,7 +309,6 @@ def create_list_item(request):
                     'error': 'Tüm alanlar gereklidir.'
                 }, status=400)
 
-            # Liste nesnesini bul
             try:
                 list_obj = Lists.objects.get(id=list_id, user=request.user)
             except Lists.DoesNotExist:
@@ -313,29 +316,28 @@ def create_list_item(request):
                     'success': False,
                     'error': 'Liste bulunamadı.'
                 }, status=404)
-
+            
             # Yeni liste öğesi oluştur
             list_item = ListItems.objects.create(
                 list_name=list_obj,
                 item_name=item_name,
                 latitude=latitude,
                 longitude=longitude,
-                notes = item_note
+                notes=item_note,
             )
 
-            for image in files:
-                Images.objects.create(list_item=list_item, image=image)
-
+            # Eğer görsel varsa Images tablosuna kaydet
+            if image_file:
+                Images.objects.create(
+                    list_item=list_item,
+                    image=image_file  # Django FileField otomatik olarak dosyayı kaydedecek
+                )
+                
             return JsonResponse({
                 'success': True,
                 'item_id': str(list_item.id)
             })
 
-        except json.JSONDecodeError:
-            return JsonResponse({
-                'success': False,
-                'error': 'Geçersiz JSON verisi.'
-            }, status=400)
         except Exception as e:
             return JsonResponse({
                 'success': False,
@@ -346,8 +348,6 @@ def create_list_item(request):
         'success': False,
         'error': 'İzin verilmeyen metod.'
     }, status=405)
-
-
 
 def logout_view(request):
     logout(request)

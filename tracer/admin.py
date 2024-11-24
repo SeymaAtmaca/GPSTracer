@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import User, Notification, FriendRequest, Location, Friendship, Lists, ListItems
+from .models import User, Notification, FriendRequest, Location, Friendship, Lists, ListItems, Images
 
 # admin.site.register(User)
 # admin.site.register(FriendRequest)
@@ -9,7 +9,7 @@ from .models import User, Notification, FriendRequest, Location, Friendship, Lis
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('id','email','first_name','last_name','isActive')
+    list_display = ('id','email','first_name','last_name','profile_picture', 'isActive')
     list_filter = ('isActive',)
     #filter_horizontal = ('friends',)
     
@@ -34,3 +34,7 @@ class ListsAdmin(admin.ModelAdmin):
 @admin.register(ListItems)
 class ListItemsAdmin(admin.ModelAdmin):
     list_display = ('id', 'list_name', 'item_name', 'notes', 'latitude', 'longitude')
+
+@admin.register(Images)
+class ImagesAdmin(admin.ModelAdmin):
+    list_display = ('id', 'list_item', 'image', 'uploaded_at')

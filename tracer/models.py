@@ -9,6 +9,7 @@ class User(AbstractUser):
     first_name = models.CharField(max_length=250)
     last_name = models.CharField(max_length=250)
     profile_picture = models.ImageField(upload_to='profile_pics', blank=True, null=True)
+    background_picture = models.ImageField(upload_to='background_pics', blank=True, null=True)
     show_friend_list = models.BooleanField(default=False)
     show_locations = models.BooleanField(default=False)
     isActive = models.BooleanField(default=True)
@@ -73,3 +74,12 @@ class ListItems(models.Model):
     latitude = models.FloatField()
     longitude = models.FloatField()
     notes = models.CharField(max_length=255, default="")
+
+
+class Images(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4,editable=False )
+    list_item = models.ForeignKey('ListItems', related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='item_images', blank=True, null=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    
