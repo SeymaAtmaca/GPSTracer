@@ -11,23 +11,26 @@
 <body style="background-color:#212730">
     {% include 'tracer/partials/_navbar.html' %}
  
-    <div class="container">
-        <div class="row">
-            <div class="col-md-3" id="friend-list">
+    <div class="container-fluid">
+        <div class="row" style="justify-content: center; min-height: 80vh;" >
+            <div class="col-3" id="friend-list" style="max-width:300px; height:80vh;">
                 {% for friend in friends_locations %}
                 <div class="friend-card">
-                    <img src="{{ friend.profile_picture }}" alt="Profile Picture" class="friend-picture">
+                    
                     <a href="{% url 'visit_profile' friend.id %}" class="friend-link">
                         <div class="friend-info">
-                            <span class="friend-username">{{ friend.username }}</span>
+                            <img src="{{ friend.profile_picture }}" alt="Profile Picture" class="friend-picture">
                         </div>
                     </a>
+                    <div class="friend-info">
+                            <span class="friend-username">{{ friend.username }}</span>
+                        </div>
                 </div>
                 {% empty %}
                     <p class="no-friends">No friends yet.</p>
                 {% endfor %}
             </div>
-            <div class="col-md-8" id="map">
+            <div class="col-8" id="map" style="min-width:700px; max-width:90%; min-height:80vh;">
                 <!-- Harita içeriği buraya gelecek -->
             </div>
         </div>

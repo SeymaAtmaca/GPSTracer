@@ -1,13 +1,19 @@
 /* Genel sayfa düzeni */
 #container {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
+    align-items:center;
     width: 100%;
     height: 100%;
+    flex-wrap: nowrap;
+    min-width:900px; 
+    min-height: 80vh;
 }
+
+
+
 #map { 
     height: 570px;
-    width: 75%;  
     border: 1px solid black;
     border-radius: 10px;
     margin-top: 20px;

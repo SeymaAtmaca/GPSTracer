@@ -34,7 +34,8 @@
                         <div class="notification-item">
                             <p>{{ notification.message }}</p>
                             <small>{{ notification.created_date }}</small>
-                            <a href="{{ notification.link }}" class="notification-link">Detaylar</a>
+                            <a href="{{ notification.link }}" class="notification-link" data-id="{{ notification.id }}">Detaylar</a>
+
                         </div>
                     {% endfor %}
               
@@ -71,21 +72,27 @@
             });
 
             $('.notification-link').on('click', function(event){
+                event.preventDefault();  // Prevent default anchor click behavior
                 const notificationId = $(this).data('id');
-                const dataUrl = $(this).attr('href')
-                const start = dataUrl.indexOf("/user/") + 6; 
-                const end = dataUrl.lastIndexOf("/");
-                const id = dataUrl.substring(start, end);
+                const dataUrl = $(this).attr('href');  // Get the URL from the link
+                const id = dataUrl.split('/')[2];  // Extract ID dynamically from the URL
+                
                 $.ajax({
-                    url : '/visit_profile',
-                    method : 'POST',
-                    data : {
-                        'notificationId' : notificationId,
-                        'dataUrl' : id,
-                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    url: '/visit_profile/' + id + '/',  // Construct proper endpoint
+                    method: 'POST',
+                    data: {
+                        'notificationId': notificationId,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'  // Ensure CSRF token is passed
+                    },
+                    success: function(response) {
+                        window.location.href = dataUrl;  // Redirect to the profile page
+                    },
+                    error: function(xhr) {
+                        console.error('Error visiting profile:', xhr.responseText);
                     }
-                })
-            })
+                });
+            });
+
         });
     </script>
 </body>
